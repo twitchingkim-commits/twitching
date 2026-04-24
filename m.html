@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>나의 해방일지 모바일버전 1.2</title>
+    <title>나의 해방일지 모바일버전 성공 1.2</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -15,7 +15,7 @@
         h2 { color: #1a73e8; font-size: 1.5rem; margin-bottom: 5px; }
         .version-tag { font-size: 0.8rem; color: #888; }
 
-        .header-btns { display: flex; gap: 10px; margin-bottom: 20px; }
+        .header-btns { display: flex; gap: 12px; margin-bottom: 20px; }
         .calc-btn { flex: 1; background-color: #28a745; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; }
         .info-btn { flex: 1; background-color: #1a73e8; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; }
 
@@ -48,8 +48,8 @@
 
 <div class="container">
     <div class="title-bar">
-        <h2>나의 해방일지 모바일버전 1.2</h2>
-        <div class="version-tag">성공 1.2 (인출 전략 풀 데이터 복원판)</div>
+        <h2>나의 해방일지 모바일버전 성공 1.2</h2>
+        <div class="version-tag">성공 1.2 (멀티 자산 차트 동기화 업데이트)</div>
     </div>
 
     <div class="header-btns">
@@ -136,7 +136,7 @@
     </div>
 
     <div class="chart-section">
-        <h3 style="text-align:center; font-size:1.1rem; color:#1a73e8; margin-bottom:20px;">📊 자산군별 추이 분석</h3>
+        <h3 style="text-align:center; font-size:1.1rem; color:#1a73e8; margin-bottom:20px;">📊 자산군별 추이 분석 (PC 동기화)</h3>
         <div class="chart-wrapper"><canvas id="mainChart"></canvas></div>
     </div>
 </div>
@@ -146,6 +146,8 @@
 <script>
     const pN = s => parseInt(s.toString().replace(/,/g, '')) || 0;
     const baseVals = [103886514, 20527374, 12364388, 6162639, 177395000, 271778500];
+    const assetNames = ['주식', 'ISA', '개인연금', 'IRP', 'CMA', 'DC퇴직금', '최종총계'];
+    const assetColors = ['#e91e63', '#00bcd4', '#ff9800', '#9c27b0', '#4caf50', '#795548', '#1a73e8'];
     let assetChart;
 
     function saveMilestones() { localStorage.setItem('m_ret_ms', JSON.stringify(Array.from(document.querySelectorAll('.milestone-input')).map(el => el.value))); }
@@ -176,6 +178,8 @@
             dc: { 2038: 20000000, 2039: 28569576 }
         };
 
+        const ids = ['stock', 'isa', 'pension', 'irp', 'cma', 'dc'];
+
         for(let i=0; i<14; i++) {
             const y = 2026 + i;
             let mExp = (y >= 2029) ? Math.round(4500000 * Math.pow(1.025, y - 2029)) : 0;
@@ -187,8 +191,9 @@
                     let addIsa = Math.min(20000000, 100000000 - isaSum); isaSum += addIsa;
                     [growth, final].forEach(a => { a.cma -= (9000000+addIsa); a.pension += 6000000; a.irp += 3000000; a.isa += addIsa; });
                 }
-                ['stock', 'isa', 'pension', 'irp', 'cma', 'dc'].forEach((id, idx) => {
-                    const rate = (100 + parseFloat(document.querySelectorAll('.'+['r-stock', 'r-isa', 'r-pension', 'r-irp', 'r-cma', 'r-dc'][idx])[i].value)) / 100;
+                ids.forEach((id, idx) => {
+                    const rateInput = document.querySelectorAll('.'+['r-stock', 'r-isa', 'r-pension', 'r-irp', 'r-cma', 'r-dc'][idx])[i].value;
+                    const rate = (100 + parseFloat(rateInput)) / 100;
                     growth[id] = Math.round(growth[id] * rate);
                     final[id] = Math.round(final[id] * rate);
                     if(withdrawals[id] && withdrawals[id][y]) final[id] -= withdrawals[id][y];
@@ -196,7 +201,7 @@
             }
             
             let sTotal = 0, fTotal = 0;
-            ['stock', 'isa', 'pension', 'irp', 'cma', 'dc'].forEach(id => {
+            ids.forEach(id => {
                 const sV = Math.max(0, growth[id]); const fV = Math.max(0, final[id]);
                 document.getElementById('sim-'+id).querySelectorAll('.val')[i].innerText = sV.toLocaleString();
                 document.getElementById('fin-'+id).querySelectorAll('.val')[i].innerText = fV.toLocaleString();
@@ -209,16 +214,46 @@
     }
 
     function updateChart() {
-        const data = Array.from(document.getElementById('fin-total').querySelectorAll('.val')).map(td => pN(td.innerText));
-        if(!assetChart) {
-            assetChart = new Chart(document.getElementById('mainChart').getContext('2d'), {
-                type: 'line',
-                data: { labels: ['26','27','28','29','30','31','32','33','34','35','36','37','38','39'], datasets: [{ label: '총자산(억)', data: data, borderColor: '#1a73e8', tension: 0.35, fill: true, backgroundColor: 'rgba(26, 115, 232, 0.05)' }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => (v / 100000000).toFixed(1) + '억' } } } }
-            });
-        } else { assetChart.data.datasets[0].data = data; assetChart.update(); }
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const labels = ['26','27','28','29','30','31','32','33','34','35','36','37','38','39'];
+        
+        // 데이터셋 구성 (PC 버전과 동일)
+        const idsFull = ['stock', 'isa', 'pension', 'irp', 'cma', 'dc', 'total'];
+        const datasets = idsFull.map((id, idx) => {
+            const row = (id === 'total') ? document.getElementById('fin-total') : document.getElementById('fin-'+id);
+            const data = Array.from(row.querySelectorAll('.val')).map(td => pN(td.innerText));
+            return {
+                label: assetNames[idx],
+                data: data,
+                borderColor: assetColors[idx],
+                backgroundColor: idx === 6 ? 'rgba(26, 115, 232, 0.05)' : 'transparent',
+                borderWidth: idx === 6 ? 4 : 2,
+                pointRadius: 3,
+                tension: 0.35,
+                fill: idx === 6
+            };
+        });
+
+        if(assetChart) assetChart.destroy();
+        assetChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: labels, datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: { ticks: { callback: v => (v / 100000000).toFixed(1) + '억' } }
+                }
+            }
+        });
     }
+
     window.onload = () => { loadData(); runSimulation(); };
+    function openReport() { alert("AI 인사이트 리포트 시스템 준비 중입니다."); }
 </script>
 </body>
 </html>
