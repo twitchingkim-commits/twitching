@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>나의 해방일지 모바일버전 1.2</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        :root {
+            --ios-blue: #007AFF;
+            --ios-bg: #F2F2F7;
+            --ios-card: #FFFFFF;
+            --primary-green: #28a745;
+            --danger: #d93025;
+        }
+
+        body { 
+            font-family: 'Pretendard', -apple-system, sans-serif; 
+            margin: 0; 
+            background-color: var(--ios-bg); 
+            color: #1c1c1e;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+        }
+
+        .container { padding: 15px; }
+
+        /* 헤더 디자인 */
+        .header { padding: 10px 5px 20px; }
+        .header h2 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -1px; color: var(--ios-blue); }
+        .version-tag { font-size: 13px; color: #8e8e93; margin-top: 5px; }
+
+        /* 요약 카드 */
+        .summary-card {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(26, 115, 232, 0.2);
+            margin-bottom: 20px;
+        }
+        .summary-card .label { font-size: 14px; opacity: 0.8; margin-bottom: 8px; }
+        .summary-card .total-value { font-size: 32px; font-weight: 900; margin-bottom: 15px; }
+        
+        /* 섹션 공통 스타일 */
+        .section-title { font-size: 18px; font-weight: 700; margin: 25px 5px 12px; display: flex; align-items: center; gap: 8px; }
+
+        /* 입력 폼 리스트 스타일 */
+        .input-list { background: var(--ios-card); border-radius: 15px; overflow: hidden; }
+        .input-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 0.5px solid #E5E5EA; }
+        .input-item:last-child { border-bottom: none; }
+        .input-item label { font-size: 16px; font-weight: 500; }
+        .input-item input { border: none; text-align: right; font-size: 16px; font-weight: 700; color: var(--ios-blue); outline: none; width: 120px; }
+
+        /* 차트 카드 */
+        .chart-card { background: var(--ios-card); border-radius: 15px; padding: 20px; height: 350px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        /* 상세 내역 카드 (기존 표의 모바일 변환) */
+        .detail-list { margin-top: 15px; }
+        .detail-item { 
+            background: var(--ios-card); border-radius: 15px; padding: 18px; margin-bottom: 12px;
+            display: grid; grid-template-columns: 1fr 2fr; gap: 10px; border-left: 5px solid var(--ios-blue);
+        }
+        .detail-item .year-age { display: flex; flex-direction: column; justify-content: center; }
+        .detail-item .year { font-size: 13px; color: #8e8e93; font-weight: 600; }
+        .detail-item .age { font-size: 19px; font-weight: 800; color: #1c1c1e; }
+        .detail-item .values { text-align: right; }
+        .detail-item .asset { font-size: 18px; font-weight: 800; color: var(--ios-blue); }
+        .detail-item .interest { font-size: 12px; color: #666; margin-top: 4px; }
+
+        /* 하단 고정 버튼 */
+        .bottom-bar {
+            position: fixed; bottom: 0; width: 100%; 
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px);
+            padding: 15px 0 calc(env(safe-area-inset-bottom) + 15px);
+            display: flex; justify-content: center; gap: 10px; border-top: 0.5px solid #C6C6C8; z-index: 1000;
+        }
+        .main-btn { 
+            width: 90%; background: var(--primary-green); color: white; border: none; 
+            padding: 16px; border-radius: 14px; font-size: 17px; font-weight: 700; 
+            box-shadow: 0 4px 12px rgba(40,167,69,0.2); 
+        }
+
+        /* AI 리포트 모달 (모바일 최적화) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--ios-bg); z-index: 2000; overflow-y: auto; }
+        .modal-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: white; position: sticky; top: 0; border-bottom: 0.5px solid #ddd; }
+        .modal-body { padding: 20px; }
+        .report-card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; border-left: 4px solid var(--ios-blue); }
+        .report-card h4 { margin: 0 0 10px; color: var(--ios-blue); }
+        .report-card p { margin: 0; font-size: 14px; line-height: 1.6; color: #444; }
+
+        /* 툴팁 대용 정보 메시지 */
+        .info-box { background: #e8f0fe; padding: 15px; border-radius: 12px; font-size: 13px; color: #0d47a1; line-height: 1.5; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>나의 해방일지</h2>
+        <div class="version-tag">모바일버전 1.2 (아이폰 15 Pro 최적화)</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="label">2039년 예상 최종 자산</div>
+        <div class="total-value" id="final-total-view">0원</div>
+        <div style="font-size: 13px; opacity: 0.9;">해방 마일스톤: 2029년 정년퇴직</div>
+    </div>
+
+    <div class="info-box">
+        💡 <b>AI 인사이트:</b> 퇴직 직후 '임의계속가입'은 필수입니다. 2029-32년 소득 공백기는 CMA 1.7억 재원이 강력한 안전판 역할을 합니다.
+    </div>
+
+    <div class="section-title">📉 투자 수익률 설정 (%)</div>
+    <div class="input-list">
+        <div class="input-item"><label>주식 수익률</label><input type="number" id="m-r-stock" value="10.0" onchange="runSim()"></div>
+        <div class="input-item"><label>ISA/연금 수익률</label><input type="number" id="m-r-isa" value="8.0" onchange="runSim()"></div>
+        <div class="input-item"><label>퇴직금(DC) 수익률</label><input type="number" id="m-r-dc" value="10.0" onchange="runSim()"></div>
+    </div>
+
+    <div class="section-title">📊 자산 추이 그래프</div>
+    <div class="chart-card">
+        <canvas id="mobileChart"></canvas>
+    </div>
+
+    <div class="section-title">📋 연도별 상세 내역 (기말)</div>
+    <div id="detail-list" class="detail-list">
+        </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="openModal()" style="background:none; border:none; color:var(--ios-blue); font-weight:700;">✨ 전체 AI 진단 리포트 보기</button>
+    </div>
+</div>
+
+<div class="bottom-bar">
+    <button class="main-btn" onclick="runSim()">🔄 데이터 동기화 및 재계산</button>
+</div>
+
+<div id="reportModal" class="modal">
+    <div class="modal-header">
+        <h3 style="margin:0;">AI 전문가 정밀 리포트</h3>
+        <button onclick="closeModal()" style="border:none; background:none; color:var(--ios-blue); font-size:17px; font-weight:700;">닫기</button>
+    </div>
+    <div class="modal-body">
+        <div class="report-card">
+            <h4>💎 포트폴리오 진단</h4>
+            <p>CMA의 1.7억 재원은 은퇴 초기 소득 공백기(2029-2032)를 방어하는 강력한 안전판입니다.</p>
+        </div>
+        <div class="report-card">
+            <h4>🛡️ 건보료 및 절세 전략</h4>
+            <p>자가 보유 시 퇴직 직후 '임의계속가입'은 필수적이며, 연 수백만원의 지출을 아낄 수 있습니다.</p>
+        </div>
+        <div class="report-card">
+            <h4>🚀 물가 상승 대응</h4>
+            <p>2.5% 물가상승 반영 시에도 현재 자산 규모는 물가 상승분을 상회하는 수익 창출이 가능합니다.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let mobileChart;
+    // [성공버전 1.2 데이터 토씨 하나 안 틀리고 그대로 유지]
+    const baseAssets = { stock: 103886514, isa: 20527374, pension: 12364388, irp: 6162639, cma: 177395000, dc: 271778500 };
+    const withdrawals = { cma: { 2029: 8741938, 2030: 41906736, 2031: 49826736, 2032: 49826736 } };
+
+    function openModal() { document.getElementById('reportModal').style.display = 'block'; }
+    function closeModal() { document.getElementById('reportModal').style.display = 'none'; }
+
+    function runSim() {
+        const rs = (100 + parseFloat(document.getElementById('m-r-stock').value)) / 100;
+        const ri = (100 + parseFloat(document.getElementById('m-r-isa').value)) / 100;
+        const rd = (100 + parseFloat(document.getElementById('m-r-dc').value)) / 100;
+
+        let cur = {...baseAssets};
+        let chartData = [];
+        let html = "";
+        let isaSum = 20527374;
+
+        for(let i=0; i<14; i++) {
+            const year = 2026 + i;
+            const age = 57 + i;
+
+            if (i > 0) {
+                // 자금 이동 로직 (2027~2029)
+                if(year >= 2027 && year <= 2029) {
+                    let addIsa = Math.min(20000000, 100000000 - isaSum);
+                    isaSum += addIsa;
+                    cur.cma -= (9000000 + addIsa);
+                    cur.pension += 6000000; cur.irp += 3000000; cur.isa += addIsa;
+                }
+                // 수익률 적용
+                cur.stock *= rs; cur.isa *= ri; cur.pension *= ri; cur.irp *= ri; cur.dc *= rd; cur.cma *= 1.025;
+                // 인출 반영
+                if(withdrawals.cma[year]) cur.cma -= withdrawals.cma[year];
+            }
+
+            let total = Object.values(cur).reduce((a,b) => a+b, 0);
+            chartData.push(Math.round(total/100000000 * 10)/10);
+
+            html += `
+                <div class="detail-item">
+                    <div class="year-age">
+                        <div class="year">${year}년</div>
+                        <div class="age">${age}세</div>
+                    </div>
+                    <div class="values">
+                        <div class="asset">${Math.round(total/10000).toLocaleString()}만원</div>
+                        <div class="interest">CMA 잔액: ${Math.round(cur.cma/10000).toLocaleString()}만</div>
+                    </div>
+                </div>
+            `;
+            
+            if(i === 13) document.getElementById('final-total-view').innerText = (total/100000000).toFixed(1) + "억원";
+        }
+
+        document.getElementById('detail-list').innerHTML = html;
+        updateChart(chartData);
+    }
+
+    function updateChart(data) {
+        const ctx = document.getElementById('mobileChart').getContext('2d');
+        if(mobileChart) mobileChart.destroy();
+        mobileChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['26','27','28','29','30','31','32','33','34','35','36','37','38','39'],
+                datasets: [{
+                    data: data, borderColor: '#007AFF', borderWidth: 4, pointRadius: 0, 
+                    fill: true, backgroundColor: 'rgba(0, 122, 255, 0.05)', tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { display: true, grid: { color: '#E5E5EA' }, ticks: { callback: v => v + '억' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    window.onload = runSim;
+</script>
+
+</body>
+</html>
