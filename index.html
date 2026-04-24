@@ -102,7 +102,7 @@
             <button class="calc-btn" onclick="confirmAndCalculate()">🔄 성장자산 계산하기</button>
         </div>
     </div>
-    <span class="version-tag">Version 성공 1.2 (자금 이동 및 툴팁 시스템 통합)</span>
+    <span class="version-tag">Version 성공 1.2 (2026년 기초자산 일치 업데이트)</span>
 
     <table>
         <thead>
@@ -171,18 +171,10 @@
             <script>
                 const rowIdsArr = ['stock', 'isa', 'pension', 'irp', 'cma', 'dc'];
                 const baseValsArr = [103886514, 20527374, 12364388, 6162639, 177395000, 271778500];
-                const transferTips = {
-                    'isa': '<span class="title">ISA 충원 계획</span>2027~28년 매년 2,000만원 증액<br>2029년 원금 1억 한도까지 부족분 납입 (CMA 차감)',
-                    'pension': '<span class="title">개인연금 충원 계획</span>2027~29년 매년 600만원 증액 (CMA 차감)',
-                    'irp': '<span class="title">IRP 충원 계획</span>2027~29년 매년 300만원 증액 (CMA 차감)'
-                };
                 rowIdsArr.forEach((id, idx) => {
                     document.write(`<tr id="sim-${id}">`);
                     if(idx === 0) document.write(`<td rowspan="7" class="group-cell">성장<br>자산</td>`);
-                    
-                    const hasTip = transferTips[id] ? 'tooltip-container' : '';
-                    document.write(`<td class="col-label ${hasTip}">${rNamesArr[idx]}${transferTips[id] ? `<div class="tooltip-content" style="width:350px; left:100%; top:0;">${transferTips[id]}</div>` : ''}</td>`);
-                    
+                    document.write(`<td class="col-label">${rNamesArr[idx]}</td>`);
                     for(let i=0; i<14; i++) document.write(`<td class="val">${i === 0 ? baseValsArr[idx].toLocaleString() : '0'}</td>`);
                     document.write(`</tr>`);
                 });
@@ -214,6 +206,10 @@
                             <span class="title">2. 최적화 팁</span>
                             <b>소득 공백기 (2029~2034):</b><br>ISA와 CMA를 주력으로 사용하고 절세 혜택 극대화.
                         </div>
+                        <div class="tooltip-column">
+                            <span class="title">3. 주식 자산 이동</span>
+                            일반 주식보다는 <b>ISA/연금계좌 내의 S&P 500</b>을 나중에 파는 것이 세금 면에서 압도적으로 유리합니다.
+                        </div>
                     </div>
                 </td>
                 <td class="col-label">1. CMA 소진</td><td>-</td><td>-</td><td>-</td><td class="negative">8,741,938</td><td class="negative">41,906,736</td><td class="negative">49,826,736</td><td class="negative">49,826,736</td><script>for(let i=0;i<7;i++)document.write('<td>-</td>');</script>
@@ -227,10 +223,7 @@
                 rowIdsArr.forEach((id, idx) => {
                     document.write(`<tr id="fin-${id}">`);
                     if(idx === 0) document.write(`<td rowspan="7" class="group-cell">기말<br>잔액</td>`);
-                    
-                    const hasTip = transferTips[id] ? 'tooltip-container' : '';
-                    document.write(`<td class="col-label ${hasTip}">${rNamesArr[idx]} 잔액${transferTips[id] ? `<div class="tooltip-content" style="width:350px; left:100%; top:0;">${transferTips[id]}</div>` : ''}</td>`);
-                    
+                    document.write(`<td class="col-label">${rNamesArr[idx]} 잔액</td>`);
                     for(let i=0; i<14; i++) document.write(`<td class="val">${i === 0 ? baseValsArr[idx].toLocaleString() : '0'}</td>`);
                     document.write(`</tr>`);
                 });
@@ -265,18 +258,21 @@
                     <h4>🚀 물가 및 구매력 분석</h4>
                     <ul class="insight-list">
                         <li><b>실질 가치 방어:</b> 2.5% 물가상승 반영 시 미래의 450만원은 구매력 유지를 위해 필수적인 설계입니다.</li>
+                        <li><b>선순환 구조:</b> 현재 자산 규모는 물가 상승분을 상회하는 수익 창출이 가능하여 자산 고갈 위험이 매우 낮습니다.</li>
                     </ul>
                 </div>
                 <div class="report-card">
                     <h4>🛡️ 건보료 및 절세 전략</h4>
                     <ul class="insight-list">
                         <li><b>건보료 방어:</b> 평촌 자가 보유 시 정년퇴직 직후 '임의계속가입'은 필수적이며, 연 수백만원의 지출을 아낄 수 있습니다.</li>
+                        <li><b>인출 최적화:</b> 비과세(ISA)와 과세이연(연금) 자산을 후순위로 배치하여 복리 효과를 극대화했습니다.</li>
                     </ul>
                 </div>
                 <div class="report-card">
                     <h4>💡 전문가 최종 가이드</h4>
                     <ul class="insight-list">
                         <li><b>공적 연금 연계:</b> 2032년 국민연금 개시 전까지 브릿지 자금(CMA) 활용도가 핵심입니다.</li>
+                        <li><b>정기 리밸런싱:</b> 시장 변동성을 고려하여 1년 단위로 시뮬레이션 수익률을 점검하고 보정하십시오.</li>
                     </ul>
                 </div>
             </div>
@@ -299,17 +295,51 @@
     function openReport() { document.getElementById('reportModal').style.display = 'block'; }
     function closeReport() { document.getElementById('reportModal').style.display = 'none'; }
     window.onclick = function(e) { if (e.target == document.getElementById('reportModal')) closeReport(); }
-    function autoResize(textarea) { textarea.style.height = 'auto'; textarea.style.height = textarea.scrollHeight + 'px'; }
-    function saveMilestones() { localStorage.setItem('retirement_milestones', JSON.stringify(Array.from(document.querySelectorAll('.milestone-input')).map(el => el.value))); }
-    function loadMilestones() { const savedData = localStorage.getItem('retirement_milestones'); if (savedData) { JSON.parse(savedData).forEach((val, idx) => { if (document.querySelectorAll('.milestone-input')[idx]) { document.querySelectorAll('.milestone-input')[idx].value = val; autoResize(document.querySelectorAll('.milestone-input')[idx]); } }); } else { const defaults = { 3: "정년퇴직 (7월)\n개인연금 개시", 8: "국민연금 개시\n(8월)" }; Object.keys(defaults).forEach(idx => { if(document.querySelectorAll('.milestone-input')[idx]) { document.querySelectorAll('.milestone-input')[idx].value = defaults[idx]; autoResize(document.querySelectorAll('.milestone-input')[idx]); } }); } }
-    function saveRates() { const ratesData = {}; rCls.forEach(cls => { ratesData[cls] = Array.from(document.querySelectorAll('.' + cls)).map(input => input.value); }); localStorage.setItem('retirement_rates', JSON.stringify(ratesData)); }
-    function loadRates() { const savedData = localStorage.getItem('retirement_rates'); if (savedData) { const ratesData = JSON.parse(savedData); rCls.forEach(cls => { if (ratesData[cls]) { document.querySelectorAll('.' + cls).forEach((el, idx) => { el.value = ratesData[cls][idx]; }); } }); } }
+
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    function saveMilestones() {
+        const milestoneData = Array.from(document.querySelectorAll('.milestone-input')).map(el => el.value);
+        localStorage.setItem('retirement_milestones', JSON.stringify(milestoneData));
+    }
+
+    function loadMilestones() {
+        const savedData = localStorage.getItem('retirement_milestones');
+        const milestoneInputs = document.querySelectorAll('.milestone-input');
+        if (savedData) {
+            const milestoneData = JSON.parse(savedData);
+            milestoneData.forEach((val, idx) => { if (milestoneInputs[idx]) { milestoneInputs[idx].value = val; autoResize(milestoneInputs[idx]); } });
+        } else {
+            const defaults = { 3: "정년퇴직 (7월)\n개인연금 개시", 8: "국민연금 개시\n(8월)" };
+            Object.keys(defaults).forEach(idx => { if(milestoneInputs[idx]) { milestoneInputs[idx].value = defaults[idx]; autoResize(milestoneInputs[idx]); } });
+        }
+    }
+
+    function saveRates() {
+        const ratesData = {};
+        rCls.forEach(cls => { ratesData[cls] = Array.from(document.querySelectorAll('.' + cls)).map(input => input.value); });
+        localStorage.setItem('retirement_rates', JSON.stringify(ratesData));
+    }
+
+    function loadRates() {
+        const savedData = localStorage.getItem('retirement_rates');
+        if (savedData) {
+            const ratesData = JSON.parse(savedData);
+            rCls.forEach(cls => { if (ratesData[cls]) { const inputs = document.querySelectorAll('.' + cls); ratesData[cls].forEach((val, idx) => { if (inputs[idx]) inputs[idx].value = parseFloat(val) || 0; }); } });
+        }
+    }
 
     function confirmAndCalculate() { if(confirm("수정된 수익률과 인출 순서로 재계산하시겠습니까?")) runSimulation(); }
 
     function runSimulation() {
         saveRates(); saveMilestones();
-        const baseValues = { stock: 103886514, isa: 20527374, pension: 12364388, irp: 6162639, cma: 177395000, dc: 271778500 };
+        // 기초 자산 (성장자산의 2026년 금액)
+        const baseValues = [103886514, 20527374, 12364388, 6162639, 177395000, 271778500];
+        const inflationRate = 0.025; 
+        const baseMonthlyExpense = 4500000;
         const withdrawals = {
             cma: { 2029: 8741938, 2030: 41906736, 2031: 49826736, 2032: 49826736 },
             isa: { 2033: 25000000 },
@@ -317,59 +347,39 @@
             dc: { 2038: 20000000, 2039: 28569576 }
         };
 
-        // 로직 변수 초기화
-        let growthAssets = { ...baseValues };
-        let finalAssets = { ...baseValues };
-        let isaCumulativeDeposit = 20527374; 
-
         for(let i=0; i<14; i++) {
             const year = 2026 + i;
-            let mExp = (year >= 2029) ? Math.round(4500000 * Math.pow(1.025, year - 2029)) : 0;
+            let mExp = (year >= 2029) ? Math.round(baseMonthlyExpense * Math.pow(1 + inflationRate, year - 2029)) : 0;
             document.getElementById('expense-monthly').querySelectorAll('.val')[i].innerText = year >= 2029 ? mExp.toLocaleString() : '-';
             document.getElementById('expense-yearly').querySelectorAll('.val')[i].innerText = year >= 2029 ? (mExp * 12).toLocaleString() : '-';
 
-            // --- [자금 이동 로직 (2027~2029)] ---
-            if (year >= 2027 && year <= 2029) {
-                let addPen = 6000000, addIrp = 3000000, addIsa = 0;
-                if (isaCumulativeDeposit < 100000000) {
-                    addIsa = Math.min(20000000, 100000000 - isaCumulativeDeposit);
-                    isaCumulativeDeposit += addIsa;
-                }
-                let totalTransfer = addPen + addIrp + addIsa;
-
-                // 성장/최종 자산 공통 차감 및 증액
-                [growthAssets, finalAssets].forEach(assets => {
-                    assets.cma -= totalTransfer; assets.pension += addPen; assets.irp += addIrp; assets.isa += addIsa;
-                });
-            }
-
-            // --- [섹션 2: 성장자산 계산 및 출력] ---
-            let sTotal = 0;
+            let sTotal = 0, fTotal = 0;
             rowIds.forEach((id, idx) => {
-                const sCell = document.getElementById('sim-'+id).querySelectorAll('.val')[i];
-                const rate = (100 + parseFloat(document.querySelectorAll('.'+rCls[idx])[i].value)) / 100;
+                const sCells = document.getElementById('sim-'+id).querySelectorAll('.val');
+                const fCells = document.getElementById('fin-'+id).querySelectorAll('.val');
+                const rateInput = document.querySelectorAll('.'+rCls[idx])[i].value;
+                const rate = (100 + parseFloat(rateInput)) / 100;
                 
-                const currentVal = Math.max(0, growthAssets[id]);
-                sCell.innerText = currentVal.toLocaleString();
-                sTotal += currentVal;
-                growthAssets[id] = Math.round(growthAssets[id] * rate);
+                if (i === 0) {
+                    // 2026년 기초 금액 세팅: 성장자산과 최종자산을 일치시킴
+                    sCells[0].innerText = baseValues[idx].toLocaleString();
+                    fCells[0].innerText = baseValues[idx].toLocaleString();
+                } else {
+                    let sPrev = pN(sCells[i-1].innerText);
+                    let fPrev = pN(fCells[i-1].innerText);
+                    
+                    // 성장자산 계산
+                    sCells[i].innerText = Math.round(sPrev * rate).toLocaleString();
+                    
+                    // 최종자산 계산 (수익률 반영 후 인출액 차감)
+                    let fCurrent = Math.round(fPrev * rate);
+                    if (withdrawals[id] && withdrawals[id][year]) fCurrent -= withdrawals[id][year];
+                    fCells[i].innerText = fCurrent.toLocaleString();
+                }
+                sTotal += pN(sCells[i].innerText);
+                fTotal += pN(fCells[i].innerText);
             });
             document.getElementById('sim-total').querySelectorAll('.val')[i].innerText = sTotal.toLocaleString();
-
-            // --- [섹션 4: 최종자산 계산 및 출력] ---
-            let fTotal = 0;
-            rowIds.forEach((id, idx) => {
-                const fCell = document.getElementById('fin-'+id).querySelectorAll('.val')[i];
-                const rate = (100 + parseFloat(document.querySelectorAll('.'+rCls[idx])[i].value)) / 100;
-
-                let nextVal = Math.round(finalAssets[id] * rate);
-                if (withdrawals[id] && withdrawals[id][year]) nextVal -= withdrawals[id][year];
-                
-                finalAssets[id] = nextVal;
-                const displayVal = Math.max(0, finalAssets[id]);
-                fCell.innerText = displayVal.toLocaleString();
-                fTotal += displayVal;
-            });
             document.getElementById('fin-total').querySelectorAll('.val')[i].innerText = fTotal.toLocaleString();
         }
         updateChart();
@@ -404,11 +414,19 @@
                         mode: 'index',
                         intersect: false,
                         callbacks: {
-                            label: function(context) { return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + '원'; },
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed.y !== null) label += context.parsed.y.toLocaleString() + '원';
+                                return label;
+                            },
                             footer: function(items) {
                                 const yearIdx = items[0].dataIndex;
-                                const details = ['\n[항목별 잔액]'];
-                                rowIds.forEach((id, idx) => { details.push(`${names[idx]}: ${document.getElementById('fin-'+id).querySelectorAll('.val')[yearIdx].innerText}원`); });
+                                const details = ['\n[항목별 구성 내역]'];
+                                rowIds.forEach((id, idx) => {
+                                    const val = document.getElementById('fin-'+id).querySelectorAll('.val')[yearIdx].innerText;
+                                    details.push(`${names[idx]}: ${val}원`);
+                                });
                                 return details.join('\n');
                             }
                         }
