@@ -2,442 +2,349 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 해방일지 ver 1.2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>나의 해방일지 v1.3</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        body { font-family: 'Pretendard', sans-serif; margin: 10px; background-color: #f4f6f8; color: #333; line-height: 1.6; }
-        
-        .container { width: 98%; max-width: 100%; margin: 0 auto; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        
-        .title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        h2 { color: #1a73e8; border-left: 6px solid #1a73e8; padding-left: 15px; margin: 0; font-size: 1.7rem; letter-spacing: -0.5px; }
-        .version-tag { font-size: 0.9rem; color: #888; margin-bottom: 25px; display: block; padding-left: 20px; }
-        
-        .header-btns { display: flex; gap: 12px; align-items: center; }
-        .calc-btn { background-color: #28a745; color: white; border: none; padding: 12px 22px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(40,167,69,0.2); }
-        .calc-btn:hover { background-color: #218838; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(40,167,69,0.3); }
-        
-        .info-btn { background-color: #1a73e8; color: #fff; border: none; padding: 11px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-        .info-btn:hover { background-color: #1557b0; box-shadow: 0 4px 8px rgba(26,115,232,0.3); }
+        :root { --sk-red: #E02020; --sk-orange: #FF5000; --primary-color: #222222; --bg-color: #F4F7FA; --card-bg: #ffffff; --border-color: #E2E8F0; --accent-blue: #EBF4FF; }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--bg-color); padding-bottom: 140px; color: #333; overflow-x: auto; letter-spacing: -0.01em; }
+        .container { padding: 10px; width: 99%; margin: 0 auto; box-sizing: border-box; }
+        .header { background: var(--card-bg); padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; text-align: center; border-top: 4px solid var(--sk-red); }
+        .header h1 { margin: 0; font-size: 1.3rem; font-weight: 800; color: #111; }
+        .header h1 span { font-size: 0.8rem; color: var(--sk-red); background: #FFF0F0; padding: 2px 8px; border-radius: 6px; margin-left: 10px; }
+        .table-wrapper { width: 100%; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        table { border-collapse: collapse; width: 100%; font-size: 0.82rem; table-layout: auto; } 
+        th, td { border-bottom: 1px solid var(--border-color); padding: 12px 6px; text-align: right; }
+        th { background: #F8F9FB; text-align: center; font-weight: 700; color: #666; font-size: 0.75rem; }
+        .section-header { background: #F1F5F9; color: var(--primary-color); font-weight: 800; text-align: left; padding-left: 15px; border-left: 5px solid var(--sk-red); height: 40px; }
+        .col-label { width: 150px; text-align: left; background: #FFFFFF; font-weight: 600; padding-left: 15px; border-right: 1px solid var(--border-color); }
+        .milestone-cell { background: #FFFDF5; vertical-align: middle; text-align: center; min-width: 100px; }
+        .milestone-display { color: var(--sk-orange); font-weight: 700; font-size: 0.8rem; word-break: keep-all; white-space: normal; line-height: 1.4; }
+        .rate-input { width: 40px; border: none; background: #F1F5F9; text-align: right; font-weight: 400; color: var(--sk-red); outline: none; border-radius: 4px; padding: 4px; font-size: 0.8rem; }
+        .blue-row { background: var(--accent-blue); font-weight: 700; color: #0056B3; }
+        .subtotal-row { background: #F9FAFB; font-weight: 700; color: #444; border-top: 1px double var(--border-color); }
+        .negative { color: var(--sk-red); font-weight: 600; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 1600px; table-layout: fixed; margin-bottom: 40px; border-radius: 8px; position: relative; }
-        th, td { border: 1px solid #e1e4e8; padding: 10px 4px; text-align: right; position: relative; }
-        th { background-color: #f1f3f6; text-align: center; font-weight: 700; color: #444; height: 45px; }
+        .chart-section { margin-top: 20px; background: white; padding: 20px; border-radius: 15px; border: 1px solid var(--border-color); }
+        .charts-container { display: flex; gap: 15px; width: 100%; overflow-x: auto; }
+        .chart-item { flex: 1; min-width: 320px; background: #fcfcfc; border-radius: 10px; padding: 10px; border: 1px solid #f1f5f9; }
+        .chart-title { text-align: center; font-size: 0.85rem; font-weight: 800; margin-bottom: 10px; color: #475569; }
+        .chart-wrapper { width: 100%; height: 380px; }
+
+        .bottom-bar { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.98); backdrop-filter: blur(15px); padding: 18px 0 calc(env(safe-area-inset-bottom) + 12px); text-align: center; border-top: 1px solid var(--border-color); z-index: 1000; display: flex; justify-content: center; align-items: center; gap: 12px; }
+        .file-label { background: #444; color: white; padding: 14px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem; border: 1px solid #333; }
+        .btn-calc { background: var(--sk-red); color: white; border: none; padding: 14px 35px; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(224, 32, 32, 0.15); }
+        .btn-report { background: #1e293b; color: #facc15; border: none; padding: 14px 35px; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         
-        .event-header { background-color: #ffffdd !important; padding: 0 !important; }
-        .milestone-input { 
-            width: 100%; height: 70px; border: none; background: transparent; 
-            text-align: left; color: #d6336c; font-weight: 800; font-family: inherit; 
-            font-size: 0.75rem; padding: 8px; outline: none; resize: none; 
-            box-sizing: border-box; display: block; overflow: hidden;
-            word-break: keep-all; line-height: 1.4;
-        }
-
-        .age-label { background-color: #f8f9fa; font-weight: bold; font-size: 0.85rem; color: #555; }
-        .age-label td { text-align: center !important; }
-
-        .section-row { background-color: #f8f9fa; font-weight: 800; text-align: left; padding-left: 15px; color: #1a73e8; border-top: 2.5px solid #1a73e8; font-size: 0.95rem; height: 40px; }
-        .group-cell { background-color: #f8f9fa; text-align: center; font-weight: 800; width: 60px; color: #666; font-size: 0.8rem; }
-        .col-label { width: 180px; text-align: center; background-color: #f8f9fa; font-weight: 700; color: #555; }
-        
-        .rate-input { 
-            width: 100%; border: none; padding: 8px 0; background: transparent;
-            font-weight: 800; color: #333; text-align: center; 
-            font-family: inherit; font-size: 0.85rem; outline: none;
-        }
-        .rate-cell { background-color: #ffffdd !important; padding: 0 !important; }
-        
-        .total-row { background-color: #eef6ff; font-weight: 900; color: #0056b3; font-size: 0.9rem; }
-        .negative { color: #d93025; font-weight: 700; }
-        .bg-withdraw { background-color: #fffafa; }
-
-        .tooltip-container { cursor: help; position: relative; }
-        .tooltip-content { 
-            visibility: hidden; width: 1300px; background-color: #2c3e50; color: #ecf0f1; 
-            text-align: left; border-radius: 12px; padding: 30px; 
-            position: absolute; z-index: 99999; top: 100%; left: 0; 
-            opacity: 0; transition: opacity 0.2s; font-weight: normal; 
-            font-size: 1.05rem; line-height: 1.6; box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-            pointer-events: none; display: flex; gap: 30px;
-        }
-        .bg-withdraw .tooltip-content { bottom: 100%; top: auto; margin-bottom: 10px; }
-        .tooltip-container:hover .tooltip-content { visibility: visible; opacity: 1; }
-        .tooltip-column { flex: 1; }
-        .tooltip-column:not(:last-child) { border-right: 1px solid rgba(255,255,255,0.1); padding-right: 25px; }
-        .tooltip-content b { color: #f1c40f; font-weight: 800; }
-        .tooltip-content .title { font-size: 1.2rem; color: #2ecc71; font-weight: 800; margin-bottom: 15px; display: block; border-bottom: 1px solid #555; padding-bottom: 8px; }
-
-        .chart-section { margin-top: 60px; padding: 40px; border-top: 1px solid #eee; background-color: #fff; border-radius: 16px; }
-        .chart-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 30px; padding: 20px; background: #fdfdfd; border-radius: 12px; border: 1px solid #f0f0f0; }
-        .check-item { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; color: #555; }
-        .check-item input { width: 18px; height: 18px; accent-color: #1a73e8; cursor: pointer; }
-        .chart-wrapper { width: 100%; height: 600px; padding: 10px; }
-
-        .modal { display: none; position: fixed; z-index: 1000000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
-        .modal-content { background-color: #fff; margin: 3% auto; padding: 0; border-radius: 20px; width: 95%; max-width: 1400px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); overflow: hidden; animation: slideDown 0.4s ease-out; }
-        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 25px 40px; position: relative; }
-        .modal-header h3 { margin: 0; font-size: 1.8rem; letter-spacing: -1px; }
-        .close { color: white; position: absolute; right: 30px; top: 25px; font-size: 2rem; font-weight: bold; cursor: pointer; opacity: 0.8; }
-        .close:hover { opacity: 1; }
-        .modal-body { padding: 40px; background-color: #f9fbff; }
-        .report-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .report-card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #e1e8f5; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .report-card h4 { color: #1a73e8; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #eef2f8; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
-        .insight-list { list-style: none; padding: 0; margin: 0; }
-        .insight-list li { margin-bottom: 12px; padding-left: 20px; position: relative; font-size: 0.95rem; }
-        .insight-list li::before { content: "•"; color: #1a73e8; font-weight: bold; position: absolute; left: 0; }
-        .highlight-box { background-color: #eef6ff; padding: 15px; border-left: 4px solid #1a73e8; border-radius: 4px; margin-top: 25px; font-weight: 600; font-size: 0.9rem; text-align: center; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(8px); }
+        .modal-content { background-color: #ffffff; margin: 3vh auto; padding: 0; border-radius: 28px; width: 85%; height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5); }
+        .modal-header { background: #1e293b; color: white; padding: 25px 40px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        .report-body { padding: 45px; color: #1e293b; line-height: 1.8; }
+        .vip-card { background: #f8fafc; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .vip-badge { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; margin-bottom: 10px; display: inline-block; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <div class="title-bar">
-        <h2> 나의 해방일지 ver 1.2</h2>
-        <div class="header-btns">
-            <button class="info-btn" onclick="openReport()">✨ AI 인사이트 리포트</button>
-            <button class="calc-btn" onclick="confirmAndCalculate()">🔄 성장자산 계산하기</button>
-        </div>
+    <div class="header"><h1>나의 해방일지 <span>v1.5</span></h1></div>
+    <div class="table-wrapper">
+        <table id="main-table">
+            <thead>
+                <tr><th colspan="2">구분 / 연도</th><script>for(let i=2026; i<=2039; i++) document.write(`<th>${i}</th>`);</script></tr>
+                <tr style="background:#FFF;"><td colspan="2" style="text-align:center; font-weight:700; color:#999; font-size:0.75rem;">연령</td><script>for(let i=57; i<=70; i++) document.write(`<td style="text-align:center; font-weight:700;">${i}세</td>`);</script></tr>
+                <tr><th colspan="2">마일스톤</th><script>for(let i=2026; i<=2039; i++) document.write(`<td class="milestone-cell"><div class="milestone-display" id="ms-${i}">-</div></td>`);</script></tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="16" class="section-header">1. AI 예상 성장률</td></tr>
+                <script>
+                    const rKeys = [{n:'주식',c:'r-stock'},{n:'ISA',c:'r-isa'},{n:'개인연금',c:'r-pension'},{n:'IRP',c:'r-irp'},{n:'CMA',c:'r-cma'},{n:'퇴직금DC',c:'r-dc'}];
+                    rKeys.forEach(a => {
+                        document.write(`<tr><td class="col-label" colspan="2">${a.n}</td>`);
+                        for(let i=0; i<14; i++) document.write(`<td><div style="display:flex;justify-content:flex-end;align-items:center;gap:2px;"><input type="number" class="rate-input ${a.c}" value="0" step="0.1"><span style="font-size:0.7rem;color:var(--sk-red);">%</span></div></td>`);
+                        document.write(`</tr>`);
+                    });
+                </script>
+                <tr><td colspan="16" class="section-header">2. 생활비 인출 전 자산 현황</td></tr>
+                <script>
+                    const aKeys = ['stock','isa','pension','irp','cma','dc'];
+                    const aNames = ['주식','ISA','개인연금저축','IRP','CMA','퇴직금DC'];
+                    aKeys.forEach((k, idx) => {
+                        document.write(`<tr class="sim-row" data-key="${k}"><td class="col-label" colspan="2">${aNames[idx]}</td>`);
+                        for(let i=0; i<14; i++) document.write(`<td class="amt">0</td>`);
+                        document.write(`</tr>`);
+                    });
+                </script>
+                <tr class="blue-row"><td colspan="2" class="col-label">기초자산 합계</td><script>for(let i=0; i<14; i++) document.write(`<td class="total-pre">0</td>`);</script></tr>
+                <tr><td colspan="16" class="section-header">3. 은퇴 후 생활비 및 인출 계획</td></tr>
+                <tr><td rowspan="2" style="background:#F8F9FB;text-align:center;font-weight:700;color:#888;font-size:0.75rem;border-right:1px solid var(--border-color);">목표<br>지출</td><td class="col-label">월 필요 생활비</td><script>for(let i=0;i<14;i++)document.write('<td class="val-m-exp">0</td>');</script></tr>
+                <tr><td class="col-label">연 필요자금</td><script>for(let i=0;i<14;i++)document.write('<td class="val-y-exp" style="color:var(--sk-red); font-weight:700;">0</td>');</script></tr>
+                <tr><td rowspan="4" style="background:#F8F9FB;text-align:center;font-weight:700;color:#888;font-size:0.75rem;border-right:1px solid var(--border-color);">기초<br>수입</td><td class="col-label">국민연금</td><script>for(let i=0;i<14;i++)document.write('<td class="val-pension">0</td>');</script></tr>
+                <tr><td class="col-label">개인연금</td><script>for(let i=0;i<14;i++)document.write('<td class="val-personal-p">0</td>');</script></tr>
+                <tr><td class="col-label">실업급여/기타</td><script>for(let i=0;i<14;i++)document.write('<td class="val-extra">0</td>');</script></tr>
+                <tr class="subtotal-row"><td class="col-label">기초수입 소계</td><script>for(let i=0;i<14;i++)document.write('<td class="val-income-subtotal">0</td>');</script></tr>
+                <tr style="background:#FDF2F2;"><td colspan="2" class="col-label" style="color:var(--sk-red); font-weight:800;">부족 생활비 합계</td><script>for(let i=0;i<14;i++)document.write('<td class="val-shortage negative">0</td>');</script></tr>
+                <tr><td rowspan="5" style="background:#F8F9FB;text-align:center;font-weight:700;color:#888;font-size:0.75rem;border-right:1px solid var(--border-color);">자산<br>인출</td><td class="col-label">1. CMA</td><script>for(let i=0;i<14;i++)document.write('<td class="w-cma negative">0</td>');</script></tr>
+                <tr><td class="col-label">2. ISA</td><script>for(let i=0;i<14;i++)document.write('<td class="w-isa negative">0</td>');</script></tr>
+                <tr><td class="col-label">3. 주식</td><script>for(let i=0;i<14;i++)document.write('<td class="w-stock negative">0</td>');</script></tr>
+                <tr><td class="col-label">4. 퇴직금DC</td><script>for(let i=0;i<14;i++)document.write('<td class="w-dc negative">0</td>');</script></tr>
+                <tr class="subtotal-row"><td class="col-label">자산인출 합계</td><script>for(let i=0;i<14;i++)document.write('<td class="val-withdraw-subtotal-display" style="color:var(--sk-red);">0</td>');</script></tr>
+                <tr><td colspan="16" class="section-header">4. 생활비 인출 후 자산 현황</td></tr>
+                <script>
+                    aKeys.forEach((k, idx) => {
+                        document.write(`<tr class="final-asset-row" data-fkey="${k}"><td class="col-label" colspan="2">${aNames[idx]}</td>`);
+                        for(let i=0; i<14; i++) document.write(`<td class="f-amt">0</td>`);
+                        document.write(`</tr>`);
+                    });
+                </script>
+                <tr class="blue-row"><td colspan="2" class="col-label" style="border:none;">최종자산 합계</td><script>for(let i=0; i<14; i++) document.write(`<td class="total-post" style="border:none;">0</td>`);</script></tr>
+            </tbody>
+        </table>
     </div>
-    <span class="version-tag">Version 성공 1.2 (2026년 기초자산 일치 업데이트)</span>
-
-    <table>
-        <thead>
-            <tr>
-                <th colspan="2" style="width:240px;">구분 / 연도</th>
-                <script>
-                    for(let i=2026; i<=2039; i++) {
-                        if(i === 2029) {
-                            document.write(`
-                                <th class="tooltip-container" style="background-color: #e8f0fe;">
-                                    <b>${i}년</b>
-                                    <div class="tooltip-content" style="left: 0;">
-                                        <div class="tooltip-column">
-                                            <span class="title">1. 임의계속가입 가이드</span>
-                                            <b>신청 시기:</b> 퇴직 후 고지서를 받은 날로부터 2개월 이내<br>
-                                            <b>추천 시기:</b> 퇴직 직후(29년 8월) 즉시 신청<br>
-                                            <b>유지 기간:</b> 최대 <b>36개월(3년)</b>
-                                        </div>
-                                        <div class="tooltip-column">
-                                            <span class="title">2. 유리한 이유</span>
-                                            <b>재산세 무력화:</b> 평촌 아파트의 재산 점수 반영을 3년간 유예<br>
-                                            <b>피부양자 유지:</b> 직장인과 동일하게 피부양자 자격 유지 가능
-                                        </div>
-                                        <div class="tooltip-column">
-                                            <span class="title">3. 최종 전략</span>
-                                            <b>32년까지 방어:</b> 무조건 신청하여 직장 수준 보험료 유지
-                                        </div>
-                                    </div>
-                                </th>`);
-                        } else {
-                            document.write(`<th>${i}년</th>`);
-                        }
-                    }
-                </script>
-            </tr>
-            <tr>
-                <th colspan="2">주요 마일스톤</th>
-                <script>
-                    for(let i=0; i<14; i++) {
-                        document.write(`<th class="event-header"><textarea class="milestone-input" oninput="autoResize(this)" onchange="saveMilestones()"></textarea></th>`);
-                    }
-                </script>
-            </tr>
-            <tr class="age-label">
-                <td colspan="2">연령</td>
-                <script>for(let i=57; i<=70; i++) document.write(`<td>${i}세</td>`);</script>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td colspan="16" class="section-row">1. 연간 예상 투자 수익률 (%)</td></tr>
-            <script>
-                const rNamesArr = ['주식', 'ISA(중개형)', '개인연금저축', '개인 IRP', 'CMA', '퇴직금(DC)'];
-                const rClsArr = ['r-stock', 'r-isa', 'r-pension', 'r-irp', 'r-cma', 'r-dc'];
-                const rDefaultsArr = [10.0, 8.0, 8.0, 8.0, 2.5, 10.0];
-                rNamesArr.forEach((name, idx) => {
-                    document.write(`<tr>`);
-                    if(idx === 0) document.write(`<td rowspan="6" class="group-cell">투자<br>수익률</td>`);
-                    document.write(`<td class="col-label">${name}</td>`);
-                    for(let i=0; i<14; i++) {
-                        document.write(`<td class="rate-cell"><input class="rate-input ${rClsArr[idx]}" type="number" step="0.1" value="${rDefaultsArr[idx]}" onchange="saveRates()"></td>`);
-                    }
-                    document.write(`</tr>`);
-                });
-            </script>
-            <tr><td colspan="16" class="section-row">2. 자산 증식 시뮬레이션 (성장자산)</td></tr>
-            <script>
-                const rowIdsArr = ['stock', 'isa', 'pension', 'irp', 'cma', 'dc'];
-                const baseValsArr = [103886514, 20527374, 12364388, 6162639, 177395000, 271778500];
-                rowIdsArr.forEach((id, idx) => {
-                    document.write(`<tr id="sim-${id}">`);
-                    if(idx === 0) document.write(`<td rowspan="7" class="group-cell">성장<br>자산</td>`);
-                    document.write(`<td class="col-label">${rNamesArr[idx]}</td>`);
-                    for(let i=0; i<14; i++) document.write(`<td class="val">${i === 0 ? baseValsArr[idx].toLocaleString() : '0'}</td>`);
-                    document.write(`</tr>`);
-                });
-            </script>
-            <tr id="sim-total" class="total-row"><td class="col-label">지출 전 자산 총계</td><script>for(let i=0; i<14; i++) document.write('<td class="val">0</td>');</script></tr>
-            <tr><td colspan="16" class="section-row">3. 은퇴 생활비 상세 인출 전략</td></tr>
-            <tr id="expense-monthly" style="background-color:#fffdf5; font-weight:bold;">
-                <td rowspan="2" class="group-cell">목표생활비<br>(년2.5%상향)</td>
-                <td class="col-label" style="color:#d63031;">월 생활비</td>
-                <script>for(let i=0;i<14;i++)document.write('<td class="val">0</td>');</script>
-            </tr>
-            <tr id="expense-yearly" style="background-color:#fffdf5; font-weight:bold;">
-                <td class="col-label" style="color:#d63031;">연 필요자금</td>
-                <script>for(let i=0;i<14;i++)document.write('<td class="val">0</td>');</script>
-            </tr>
-            <tr><td rowspan="3" class="group-cell">연금<br>수입</td><td class="col-label">국민연금</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td class="negative">14,171,440</td><script>for(let i=0;i<5;i++)document.write('<td>21,257,160</td>');</script></tr>
-            <tr><td class="col-label">개인연금저축</td><td>-</td><td>-</td><td>-</td><td class="negative">2,086,632</td><script>for(let i=0;i<10;i++)document.write('<td>4,173,264</td>');</script></tr>
-            <tr><td class="col-label">실업급여/기타</td><td>-</td><td>-</td><td>-</td><td class="negative">9,900,000</td><td class="negative">7,920,000</td><script>for(let i=0;i<9;i++)document.write('<td>-</td>');</script></tr>
-            <tr style="background-color:#fcfcfc;"><td colspan="2" class="col-label" style="text-align:left; padding-left:15px;">생활비 부족금액 (자산인출필요)</td><td>-</td><td>-</td><td>-</td><td class="negative">8,741,938</td><td class="negative">41,906,736</td><script>for(let i=0;i<8;i++)document.write('<td class="negative">49,826,736</td>');</script></tr>
-            <tr class="bg-withdraw">
-                <td rowspan="4" class="group-cell tooltip-container">
-                    자산<br>인출
-                    <div class="tooltip-content">
-                        <div class="tooltip-column">
-                            <span class="title">1. 추천 인출 순서 (Golden Rule)</span>
-                            <b>① 1순위: 일반 계좌 (CMA, 주식)</b><br>- 배당소득세(15.4%)가 발생하는 자산 우선 소진
-                        </div>
-                        <div class="tooltip-column">
-                            <span class="title">2. 최적화 팁</span>
-                            <b>소득 공백기 (2029~2034):</b><br>ISA와 CMA를 주력으로 사용하고 절세 혜택 극대화.
-                        </div>
-                        <div class="tooltip-column">
-                            <span class="title">3. 주식 자산 이동</span>
-                            일반 주식보다는 <b>ISA/연금계좌 내의 S&P 500</b>을 나중에 파는 것이 세금 면에서 압도적으로 유리합니다.
-                        </div>
-                    </div>
-                </td>
-                <td class="col-label">1. CMA 소진</td><td>-</td><td>-</td><td>-</td><td class="negative">8,741,938</td><td class="negative">41,906,736</td><td class="negative">49,826,736</td><td class="negative">49,826,736</td><script>for(let i=0;i<7;i++)document.write('<td>-</td>');</script>
-            </tr>
-            <tr class="bg-withdraw"><td class="col-label">2. ISA 비과세 인출</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td class="negative">25,000,000</td><script>for(let i=0;i<6;i++)document.write('<td>-</td>');</script></tr>
-            <tr class="bg-withdraw"><td class="col-label">3. 일반 주식 매도</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td class="negative">24,826,736</td><td class="negative">35,655,296</td><script>for(let i=0;i<5;i++)document.write('<td class="negative">28,569,576</td>');</script></tr>
-            <tr class="bg-withdraw"><td class="col-label">4. 퇴직금/연금수익</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td class="negative">20,000,000</td><td class="negative">28,569,576</td><script>for(let i=0;i<1;i++)document.write('<td>-</td>');</script></tr>
-
-            <tr><td colspan="16" class="section-row">4. 최종 자산 잔액 상세 (인출 반영 후)</td></tr>
-            <script>
-                rowIdsArr.forEach((id, idx) => {
-                    document.write(`<tr id="fin-${id}">`);
-                    if(idx === 0) document.write(`<td rowspan="7" class="group-cell">기말<br>잔액</td>`);
-                    document.write(`<td class="col-label">${rNamesArr[idx]} 잔액</td>`);
-                    for(let i=0; i<14; i++) document.write(`<td class="val">${i === 0 ? baseValsArr[idx].toLocaleString() : '0'}</td>`);
-                    document.write(`</tr>`);
-                });
-            </script>
-            <tr id="fin-total" class="total-row"><td class="col-label">최종 자산 총계</td><script>for(let i=0; i<14; i++) document.write('<td class="val">0</td>');</script></tr>
-        </tbody>
-    </table>
 
     <div class="chart-section">
-        <h3 style="color:#1a73e8; margin-bottom:20px; text-align:center; font-size: 1.5rem;">📊 자산군별 추이 분석 시뮬레이터</h3>
-        <div class="chart-controls" id="chartChecks"></div>
-        <div class="chart-wrapper"><canvas id="mainChart"></canvas></div>
+        <div id="chartChecks" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:15px;"></div>
+        <div class="charts-container">
+            <div class="chart-item"><div class="chart-title">🔴 HIGH Scenario</div><div class="chart-wrapper"><canvas id="chartHigh"></canvas></div></div>
+            <div class="chart-item"><div class="chart-title">🔵 MID Scenario</div><div class="chart-wrapper"><canvas id="chartMid"></canvas></div></div>
+            <div class="chart-item"><div class="chart-title">🟢 LOW Scenario</div><div class="chart-wrapper"><canvas id="chartLow"></canvas></div></div>
+        </div>
     </div>
+</div>
+
+<div class="bottom-bar">
+    <label for="excel-upload" class="file-label">Excel 업로드</label>
+    <input type="file" id="excel-upload" accept=".xlsx, .xls" style="display:none;" onchange="handleExcel(event)">
+    <button class="btn-calc" onclick="runSimulationSequence()">자산 현행화</button>
+    <button class="btn-report" onclick="openReport()">AI 은퇴자산플래너</button>
 </div>
 
 <div id="reportModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>👔 AI 은퇴 자산 전문가 정밀 진단 리포트</h3>
-            <span class="close" onclick="closeReport()">&times;</span>
+            <h2 style="margin:0;">🎖️ VIP Exclusive: 자산 보존 및 통합 전략 리포트</h2>
+            <span style="font-size:35px;cursor:pointer;" onclick="closeModal()">&times;</span>
         </div>
-        <div class="modal-body">
-            <div class="report-grid">
-                <div class="report-card">
-                    <h4>💎 자산 포트폴리오 진단</h4>
-                    <ul class="insight-list">
-                        <li><b>성장성 확보:</b> 주식 및 DC형 퇴직금의 연 10% 수익률 목표는 자산 수명을 비약적으로 늘리는 핵심 동력입니다.</li>
-                        <li><b>유동성 버퍼:</b> CMA의 1.7억 재원은 은퇴 초기 소득 공백기(2029-2032)를 방어하는 강력한 안전판입니다.</li>
-                    </ul>
-                </div>
-                <div class="report-card">
-                    <h4>🚀 물가 및 구매력 분석</h4>
-                    <ul class="insight-list">
-                        <li><b>실질 가치 방어:</b> 2.5% 물가상승 반영 시 미래의 450만원은 구매력 유지를 위해 필수적인 설계입니다.</li>
-                        <li><b>선순환 구조:</b> 현재 자산 규모는 물가 상승분을 상회하는 수익 창출이 가능하여 자산 고갈 위험이 매우 낮습니다.</li>
-                    </ul>
-                </div>
-                <div class="report-card">
-                    <h4>🛡️ 건보료 및 절세 전략</h4>
-                    <ul class="insight-list">
-                        <li><b>건보료 방어:</b> 평촌 자가 보유 시 정년퇴직 직후 '임의계속가입'은 필수적이며, 연 수백만원의 지출을 아낄 수 있습니다.</li>
-                        <li><b>인출 최적화:</b> 비과세(ISA)와 과세이연(연금) 자산을 후순위로 배치하여 복리 효과를 극대화했습니다.</li>
-                    </ul>
-                </div>
-                <div class="report-card">
-                    <h4>💡 전문가 최종 가이드</h4>
-                    <ul class="insight-list">
-                        <li><b>공적 연금 연계:</b> 2032년 국민연금 개시 전까지 브릿지 자금(CMA) 활용도가 핵심입니다.</li>
-                        <li><b>정기 리밸런싱:</b> 시장 변동성을 고려하여 1년 단위로 시뮬레이션 수익률을 점검하고 보정하십시오.</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="highlight-box">
-                ✅ 사용자님의 은퇴 플랜은 "안정적인 현금흐름"과 "물가 방어력"을 모두 갖춘 최상위권 설계로 분석됩니다. 2029년 해방을 향한 순항이 기대됩니다.
-            </div>
-        </div>
+        <div class="report-body" id="reportContent"></div>
     </div>
 </div>
 
 <script>
-    const pN = s => parseInt(s.toString().replace(/,/g, '')) || 0;
-    const idsFull = ['stock', 'isa', 'pension', 'irp', 'cma', 'dc', 'total'];
-    const names = ['주식', 'ISA', '개인연금', 'IRP', 'CMA', 'DC퇴직금', '최종총계'];
-    const colors = ['#e91e63', '#00bcd4', '#ff9800', '#9c27b0', '#4caf50', '#795548', '#1a73e8'];
-    const rowIds = ['stock', 'isa', 'pension', 'irp', 'cma', 'dc'];
-    const rCls = ['r-stock', 'r-isa', 'r-pension', 'r-irp', 'r-cma', 'r-dc'];
-    let assetChart;
+    const pN = s => (!s && s !== 0) ? 0 : (parseFloat(String(s).replace(/[^0-9.-]+/g, '')) || 0);
+    const chartIds = ['total', 'stock', 'isa', 'pension', 'irp', 'cma', 'dc'];
+    const chartNames = ['총계', '주식', 'ISA', '개인연금저축', 'IRP', 'CMA', '퇴직금DC'];
+    const chartColors = ['#1a73e8', '#E02020', '#FF5000', '#FFB400', '#222222', '#00B050', '#7030A0'];
+    let multiCharts = { high: null, mid: null, low: null };
+    let exData = { base: { stock:0, isa:0, pension:0, irp:0, cma:0, dc:0 }, income: { public: {}, personal: {}, extra: {} }, scenarioRates: { high:[], mid:[], low:[] }, expense: 4500000 };
 
-    function openReport() { document.getElementById('reportModal').style.display = 'block'; }
-    function closeReport() { document.getElementById('reportModal').style.display = 'none'; }
-    window.onclick = function(e) { if (e.target == document.getElementById('reportModal')) closeReport(); }
-
-    function autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }
-
-    function saveMilestones() {
-        const milestoneData = Array.from(document.querySelectorAll('.milestone-input')).map(el => el.value);
-        localStorage.setItem('retirement_milestones', JSON.stringify(milestoneData));
-    }
-
-    function loadMilestones() {
-        const savedData = localStorage.getItem('retirement_milestones');
-        const milestoneInputs = document.querySelectorAll('.milestone-input');
-        if (savedData) {
-            const milestoneData = JSON.parse(savedData);
-            milestoneData.forEach((val, idx) => { if (milestoneInputs[idx]) { milestoneInputs[idx].value = val; autoResize(milestoneInputs[idx]); } });
-        } else {
-            const defaults = { 3: "정년퇴직 (7월)\n개인연금 개시", 8: "국민연금 개시\n(8월)" };
-            Object.keys(defaults).forEach(idx => { if(milestoneInputs[idx]) { milestoneInputs[idx].value = defaults[idx]; autoResize(milestoneInputs[idx]); } });
-        }
-    }
-
-    function saveRates() {
-        const ratesData = {};
-        rCls.forEach(cls => { ratesData[cls] = Array.from(document.querySelectorAll('.' + cls)).map(input => input.value); });
-        localStorage.setItem('retirement_rates', JSON.stringify(ratesData));
-    }
-
-    function loadRates() {
-        const savedData = localStorage.getItem('retirement_rates');
-        if (savedData) {
-            const ratesData = JSON.parse(savedData);
-            rCls.forEach(cls => { if (ratesData[cls]) { const inputs = document.querySelectorAll('.' + cls); ratesData[cls].forEach((val, idx) => { if (inputs[idx]) inputs[idx].value = parseFloat(val) || 0; }); } });
-        }
-    }
-
-    function confirmAndCalculate() { if(confirm("수정된 수익률과 인출 순서로 재계산하시겠습니까?")) runSimulation(); }
-
-    function runSimulation() {
-        saveRates(); saveMilestones();
-        // 기초 자산 (성장자산의 2026년 금액)
-        const baseValues = [103886514, 20527374, 12364388, 6162639, 177395000, 271778500];
-        const inflationRate = 0.025; 
-        const baseMonthlyExpense = 4500000;
-        const withdrawals = {
-            cma: { 2029: 8741938, 2030: 41906736, 2031: 49826736, 2032: 49826736 },
-            isa: { 2033: 25000000 },
-            stock: { 2033: 24826736, 2034: 35655296, 2035: 28569576, 2036: 28569576, 2037: 28569576 },
-            dc: { 2038: 20000000, 2039: 28569576 }
+    function handleExcel(event) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
+            const findSheet = kw => workbook.SheetNames.find(n => n.replace(/\s/g, '').includes(kw));
+            const bNm = findSheet('기준금액'), iNm = findSheet('기초수입'), yNm = findSheet('성장률'), mNm = findSheet('마일스톤');
+            
+            if(bNm) XLSX.utils.sheet_to_json(workbook.Sheets[bNm]).forEach(row => {
+                const type = String(Object.values(row)[0] || "").trim();
+                const yr = pN(row['기준년도'] || row['연도']), amt = pN(row['기준금액(원)'] || row['기준금액']);
+                if(yr === 2026) {
+                    if(type.includes('주식')) exData.base.stock = amt; else if(type.includes('ISA')) exData.base.isa = amt;
+                    else if(type.includes('연금')) exData.base.pension = amt; else if(type.includes('IRP')) exData.base.irp = amt;
+                    else if(type.includes('CMA')) exData.base.cma = amt; else if(type.includes('퇴직금') || type.includes('DC')) exData.base.dc = amt;
+                }
+            });
+            if(iNm) XLSX.utils.sheet_to_json(workbook.Sheets[iNm], { header: 1 }).forEach(row => {
+                const yr = pN(row[0]); if(yr) { exData.income.public[yr] = pN(row[3]); exData.income.personal[yr] = pN(row[6]); exData.income.extra[yr] = (yr===2029||yr===2030)?pN(row[9]):0; }
+            });
+            if(yNm) {
+                const yrRows = XLSX.utils.sheet_to_json(workbook.Sheets[yNm], { header: 1 });
+                exData.scenarioRates = { high:[], mid:[], low:[] };
+                for(let i=0; i<14; i++) {
+                    const targetYear = 2026 + i;
+                    const rowIdx = targetYear - 2024;
+                    const rowData = yrRows[rowIdx] || [];
+                    let h=[], m=[], l=[];
+                    for(let assetIdx=0; assetIdx<6; assetIdx++) {
+                        const startCol = 1 + (assetIdx * 3);
+                        h.push(pN(rowData[startCol])); m.push(pN(rowData[startCol+1])); l.push(pN(rowData[startCol+2]));
+                        document.querySelectorAll(`.r-${['stock','isa','pension','irp','cma','dc'][assetIdx]}`)[i].value = pN(rowData[startCol+1]);
+                    }
+                    exData.scenarioRates.high.push(h); exData.scenarioRates.mid.push(m); exData.scenarioRates.low.push(l);
+                }
+            }
+            if(mNm) XLSX.utils.sheet_to_json(workbook.Sheets[mNm], { header: 1 }).forEach(row => { const yr = pN(row[0]); if(yr >= 2026 && yr <= 2039 && row[1]) document.getElementById(`ms-${yr}`).innerText = row[1]; });
+            runSimulationSequence();
         };
+        reader.readAsArrayBuffer(event.target.files[0]);
+    }
+
+    function runSimulation(targetRates, isUpdateTable) {
+        let preCur = { ...exData.base }, postCur = { ...exData.base };
+        const history = chartIds.reduce((acc, id) => { acc[id] = []; return acc; }, {});
+        const keys = ['stock', 'isa', 'pension', 'irp', 'cma', 'dc'];
 
         for(let i=0; i<14; i++) {
-            const year = 2026 + i;
-            let mExp = (year >= 2029) ? Math.round(baseMonthlyExpense * Math.pow(1 + inflationRate, year - 2029)) : 0;
-            document.getElementById('expense-monthly').querySelectorAll('.val')[i].innerText = year >= 2029 ? mExp.toLocaleString() : '-';
-            document.getElementById('expense-yearly').querySelectorAll('.val')[i].innerText = year >= 2029 ? (mExp * 12).toLocaleString() : '-';
+            const yr = 2026 + i;
+            
+            // [CMA에서 타 계좌로의 추가 불입 로직]
+            if (yr >= 2027 && yr <= 2030) {
+                let add_pension = 6000000; // 개인연금저축 (2027~2030 반영)
+                let add_isa = (yr <= 2029) ? 20000000 : 0; // ISA (2027~2029 반영)
+                let add_irp = (yr <= 2029) ? 3000000 : 0; // 개인 IRP (2027~2029 반영)
 
-            let sTotal = 0, fTotal = 0;
-            rowIds.forEach((id, idx) => {
-                const sCells = document.getElementById('sim-'+id).querySelectorAll('.val');
-                const fCells = document.getElementById('fin-'+id).querySelectorAll('.val');
-                const rateInput = document.querySelectorAll('.'+rCls[idx])[i].value;
-                const rate = (100 + parseFloat(rateInput)) / 100;
+                // CMA에서 자금 충당
+                if (postCur.cma >= add_pension) { postCur.cma -= add_pension; postCur.pension += add_pension; }
+                if (postCur.cma >= add_irp) { postCur.cma -= add_irp; postCur.irp += add_irp; }
+                // CMA 바닥나면 ISA 불입 제외
+                if (postCur.cma >= add_isa) { postCur.cma -= add_isa; postCur.isa += add_isa; } 
                 
-                if (i === 0) {
-                    // 2026년 기초 금액 세팅: 성장자산과 최종자산을 일치시킴
-                    sCells[0].innerText = baseValues[idx].toLocaleString();
-                    fCells[0].innerText = baseValues[idx].toLocaleString();
-                } else {
-                    let sPrev = pN(sCells[i-1].innerText);
-                    let fPrev = pN(fCells[i-1].innerText);
-                    
-                    // 성장자산 계산
-                    sCells[i].innerText = Math.round(sPrev * rate).toLocaleString();
-                    
-                    // 최종자산 계산 (수익률 반영 후 인출액 차감)
-                    let fCurrent = Math.round(fPrev * rate);
-                    if (withdrawals[id] && withdrawals[id][year]) fCurrent -= withdrawals[id][year];
-                    fCells[i].innerText = fCurrent.toLocaleString();
-                }
-                sTotal += pN(sCells[i].innerText);
-                fTotal += pN(fCells[i].innerText);
+                // 불입 후 기초 자산에 업데이트 (성장률 적용 전)
+                preCur = { ...postCur }; 
+            }
+
+            if(i > 0) keys.forEach((k, idx) => {
+                const rVal = targetRates ? targetRates[i][idx] : pN(document.querySelectorAll('.r-' + k)[i].value);
+                const rate = 1 + (rVal / 100);
+                preCur[k] = Math.round(preCur[k] * rate); postCur[k] = Math.round(postCur[k] * rate);
             });
-            document.getElementById('sim-total').querySelectorAll('.val')[i].innerText = sTotal.toLocaleString();
-            document.getElementById('fin-total').querySelectorAll('.val')[i].innerText = fTotal.toLocaleString();
+
+            if(isUpdateTable) {
+                keys.forEach(k => document.querySelector(`tr[data-key="${k}"]`).querySelectorAll('.amt')[i].innerText = preCur[k].toLocaleString());
+                document.querySelectorAll('.total-pre')[i].innerText = keys.reduce((s,k)=>s+preCur[k],0).toLocaleString();
+            }
+
+            let yExp = (yr >= 2029) ? Math.round(exData.expense * Math.pow(1.025, yr - 2029)) * 12 : 0;
+            let incTotal = (exData.income.public[yr]||0) + (exData.income.personal[yr]||0) + (exData.income.extra[yr]||0);
+            let shortage = Math.max(0, yExp - incTotal);
+
+            if(isUpdateTable) {
+                document.querySelectorAll('.val-m-exp')[i].innerText = Math.round(yExp/12).toLocaleString();
+                document.querySelectorAll('.val-y-exp')[i].innerText = yExp.toLocaleString();
+                document.querySelectorAll('.val-pension')[i].innerText = (exData.income.public[yr]||0).toLocaleString();
+                document.querySelectorAll('.val-personal-p')[i].innerText = (exData.income.personal[yr]||0).toLocaleString();
+                document.querySelectorAll('.val-extra')[i].innerText = (exData.income.extra[yr]||0).toLocaleString();
+                document.querySelectorAll('.val-income-subtotal')[i].innerText = incTotal.toLocaleString();
+                document.querySelectorAll('.val-shortage')[i].innerText = shortage.toLocaleString();
+            }
+
+            let wCma=0, wIsa=0, wStock=0, wDc=0;
+            if(shortage > 0) {
+                wCma = Math.min(postCur.cma, shortage); postCur.cma -= wCma; shortage -= wCma;
+                if(shortage > 0) { wIsa = Math.min(postCur.isa, shortage); postCur.isa -= wIsa; shortage -= wIsa; }
+                if(shortage > 0) { wStock = Math.min(postCur.stock, shortage); postCur.stock -= wStock; shortage -= wStock; }
+                if(shortage > 0) { wDc = Math.min(postCur.dc, shortage); postCur.dc -= wDc; shortage -= wDc; }
+            }
+            if(isUpdateTable) {
+                document.querySelectorAll('.w-cma')[i].innerText = wCma.toLocaleString();
+                document.querySelectorAll('.w-isa')[i].innerText = wIsa.toLocaleString();
+                document.querySelectorAll('.w-stock')[i].innerText = wStock.toLocaleString();
+                document.querySelectorAll('.w-dc')[i].innerText = wDc.toLocaleString();
+                document.querySelectorAll('.val-withdraw-subtotal-display')[i].innerText = (wCma+wIsa+wStock+wDc).toLocaleString();
+            }
+
+            keys.forEach(k => {
+                history[k].push(postCur[k]);
+                if(isUpdateTable) document.querySelector(`tr[data-fkey="${k}"]`).querySelectorAll('.f-amt')[i].innerText = postCur[k].toLocaleString();
+            });
+            const total = keys.reduce((s,k)=>s+postCur[k],0);
+            history['total'].push(total);
+            if(isUpdateTable) document.querySelectorAll('.total-post')[i].innerText = total.toLocaleString();
         }
-        updateChart();
+        return history;
     }
 
-    function updateChart() {
-        if (!assetChart) return;
-        idsFull.forEach((id, idx) => {
-            const row = (id === 'total') ? document.getElementById('fin-total') : document.getElementById('fin-'+id);
-            assetChart.data.datasets[idx].data = Array.from(row.querySelectorAll('.val')).map(td => pN(td.innerText));
-        });
-        assetChart.update();
+    function runSimulationSequence() {
+        const hMid = runSimulation(null, true);
+        const hHigh = runSimulation(exData.scenarioRates.high.length ? exData.scenarioRates.high : null, false);
+        const hLow = runSimulation(exData.scenarioRates.low.length ? exData.scenarioRates.low : null, false);
+        const midMaxVal = Math.max(...hMid.total) * 1.1;
+        updateCharts(hHigh, hMid, hLow, midMaxVal);
     }
 
-    window.onload = () => {
-        loadRates(); loadMilestones();
-        const datasets = idsFull.map((id, idx) => {
-            const lbl = document.createElement('label'); lbl.className = 'check-item';
-            lbl.innerHTML = `<input type="checkbox" ${idx === 6 ? 'checked' : ''} onchange="toggleDS(${idx})"> <span style="color:${colors[idx]}">■</span> ${names[idx]}`;
-            document.getElementById('chartChecks').appendChild(lbl);
-            return { label: names[idx], data: [], borderColor: colors[idx], backgroundColor: idx === 6 ? 'rgba(26, 115, 232, 0.05)' : 'transparent', borderWidth: idx === 6 ? 4 : 2, pointRadius: 4, hidden: idx !== 6, tension: 0.35, fill: idx === 6 };
+    function updateCharts(hHigh, hMid, hLow, yMax) {
+        multiCharts.high = createScenarioChart('chartHigh', hHigh, yMax);
+        multiCharts.mid = createScenarioChart('chartMid', hMid, yMax);
+        multiCharts.low = createScenarioChart('chartLow', hLow, yMax);
+        renderCheckboxes();
+    }
+
+    function createScenarioChart(canvasId, history, yMax) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        if(Chart.getChart(canvasId)) Chart.getChart(canvasId).destroy();
+        return new Chart(ctx, { type: 'line', data: { labels: Array.from({length:14}, (_,i)=>2026+i), datasets: chartIds.map((id, idx) => ({ label: chartNames[idx], data: history[id], borderColor: chartColors[idx], backgroundColor: id==='total'?'rgba(26,115,232,0.05)':'transparent', borderWidth: id==='total'?3:2, tension: 0.3, fill: id==='total' })) }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: yMax, ticks: { callback: v => (v/100000000).toFixed(1) + '억' } } } } });
+    }
+
+    function renderCheckboxes() {
+        const ctrl = document.getElementById('chartChecks'); ctrl.innerHTML = '';
+        const allLbl = document.createElement('label'); allLbl.style.cssText = "font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:5px; background:#f0f0f0; padding:4px 10px; border-radius:15px; border:1px solid #ccc; font-weight:700;";
+        allLbl.innerHTML = `<input type="checkbox" id="all-check" checked onchange="toggleAll(this)"> All`;
+        ctrl.appendChild(allLbl);
+        chartNames.forEach((name, idx) => {
+            const lbl = document.createElement('label'); lbl.style.cssText = "font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:5px; background:white; padding:4px 10px; border-radius:15px; border:1px solid #ddd;";
+            lbl.innerHTML = `<input type="checkbox" class="ds-check" checked onchange="toggleDS(${idx}, this)"> <span style="color:${chartColors[idx]}">●</span> ${name}`;
+            ctrl.appendChild(lbl);
         });
-        assetChart = new Chart(document.getElementById('mainChart').getContext('2d'), { 
-            type: 'line', 
-            data: { labels: ['26','27','28','29','30','31','32','33','34','35','36','37','38','39'], datasets: datasets }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) label += ': ';
-                                if (context.parsed.y !== null) label += context.parsed.y.toLocaleString() + '원';
-                                return label;
-                            },
-                            footer: function(items) {
-                                const yearIdx = items[0].dataIndex;
-                                const details = ['\n[항목별 구성 내역]'];
-                                rowIds.forEach((id, idx) => {
-                                    const val = document.getElementById('fin-'+id).querySelectorAll('.val')[yearIdx].innerText;
-                                    details.push(`${names[idx]}: ${val}원`);
-                                });
-                                return details.join('\n');
-                            }
-                        }
-                    }
-                }, 
-                scales: { y: { ticks: { callback: v => (v / 100000000).toFixed(1) + '억' } } } 
-            } 
-        });
-        runSimulation();
-    };
-    function toggleDS(idx) { assetChart.setDatasetVisibility(idx, !assetChart.isDatasetVisible(idx)); assetChart.update(); }
+    }
+
+    function toggleAll(allCb) {
+        document.querySelectorAll('.ds-check').forEach((cb, i) => { cb.checked = allCb.checked; Object.values(multiCharts).forEach(c => { if(c) c.setDatasetVisibility(i, allCb.checked); }); });
+        Object.values(multiCharts).forEach(c => { if(c) c.update(); });
+    }
+
+    function toggleDS(idx, cb) {
+        Object.values(multiCharts).forEach(c => { if(c) { c.setDatasetVisibility(idx, cb.checked); c.update(); } });
+        document.getElementById('all-check').checked = Array.from(document.querySelectorAll('.ds-check')).every(c => c.checked);
+    }
+
+    function openReport() {
+        const data = runSimulation(null, false);
+        const lastTotal = data.total[data.total.length - 1];
+        const isExhausted = data.total.some(v => v <= 0);
+        const exhaustYear = isExhausted ? 2026 + data.total.findIndex(v => v <= 0) : '2040년 이후';
+        const content = document.getElementById('reportContent');
+        content.innerHTML = `
+            <div class="report-section">
+                <h2>1. 자산 변곡점 분석: '소득의 계곡' 방어 전술 (2029-2033)</h2>
+                <div class="vip-card">
+                    <span class="vip-badge">Strategic Defense</span>
+                    <h3>실업급여 연계 브릿지 및 배당소득 스위칭</h3>
+                    <p>의뢰인의 가장 치명적인 리스크는 퇴직 직후인 2029년부터 국민연금이 개시되는 2034년까지의 5년입니다. 실업급여 수령액을 생활비가 아닌 <b>CMA 예비비(Buffer)</b>로 격리하여 시장 변동성에 대응하는 안전판을 구축하십시오.</p>
+                </div>
+            </div>
+            <div class="report-section">
+                <h2>2. 부동산 유동화 및 세무 전략: 평촌 재건축 시나리오</h2>
+                <div class="vip-card">
+                    <span class="vip-badge">Asset Liquidity</span>
+                    <h3>환급금 최적화 및 주택연금 신탁 설계</h3>
+                    <p>평촌 아파트 재건축 환급금 4,000만 원을 ISA 계좌로 납입하여 세액공제 혜택을 극대화하고, 70세 이후 <b>'신탁방식 주택연금'</b> 가입을 통해 평생 월급을 확보하십시오.</p>
+                </div>
+            </div>
+            <div class="report-section" style="background:#fff7f7; padding:30px; border-radius:28px;">
+                <h2>3. 건보료 및 세무 리스크 완전 차단 (Legal Defense)</h2>
+                <div class="vip-card" style="background:white;">
+                    <h3>임의계속가입 및 피부양자 사수</h3>
+                    <p>퇴직 후 3년간 보험료를 방어함과 동시에, <b>자녀(의대생)</b>가 경제력을 갖추기 전까지 사적 연금 수령액을 연 2,000만 원 이하로 철저히 통제하십시오.</p>
+                </div>
+            </div>
+            <div class="report-section">
+                <h2>4. 시나리오 기반 스트레스 테스트 및 라이프 케어</h2>
+                <div class="vip-card">
+                    <span class="vip-badge">Risk Mgmt</span>
+                    <h3>Low Scenario 대응 및 증여 플랜</h3>
+                    <p>Low Scenario 발생 시 생활비를 즉각 삭감하는 가이드라인을 준수하고, 자녀의 개원 시점에 맞춘 <b>'10년 단위 증여 플랜'</b>을 가동하십시오.</p>
+                </div>
+            </div>
+            <div style="text-align:center; font-size:1.2rem; font-weight:800; color:var(--sk-red); margin-top:20px;">
+                2039년 예상 자산 잔액 (Mid 기준): ${Math.round(lastTotal).toLocaleString()}원
+            </div>
+        `;
+        document.getElementById("reportModal").style.display = "block";
+    }
+
+    function closeModal() { document.getElementById("reportModal").style.display = "none"; }
+    window.onclick = e => { if(e.target == document.getElementById("reportModal")) closeModal(); };
+    window.onload = () => runSimulationSequence();
 </script>
 </body>
 </html>
