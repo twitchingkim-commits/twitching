@@ -3,348 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>나의 해방일지 v1.3</title>
+    <title>나의 해방일지 v7.8</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        :root { --sk-red: #E02020; --sk-orange: #FF5000; --primary-color: #222222; --bg-color: #F4F7FA; --card-bg: #ffffff; --border-color: #E2E8F0; --accent-blue: #EBF4FF; }
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--bg-color); padding-bottom: 140px; color: #333; overflow-x: auto; letter-spacing: -0.01em; }
-        .container { padding: 10px; width: 99%; margin: 0 auto; box-sizing: border-box; }
-        .header { background: var(--card-bg); padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; text-align: center; border-top: 4px solid var(--sk-red); }
-        .header h1 { margin: 0; font-size: 1.3rem; font-weight: 800; color: #111; }
-        .header h1 span { font-size: 0.8rem; color: var(--sk-red); background: #FFF0F0; padding: 2px 8px; border-radius: 6px; margin-left: 10px; }
-        .table-wrapper { width: 100%; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid var(--border-color); }
-        table { border-collapse: collapse; width: 100%; font-size: 0.82rem; table-layout: auto; } 
-        th, td { border-bottom: 1px solid var(--border-color); padding: 12px 6px; text-align: right; }
-        th { background: #F8F9FB; text-align: center; font-weight: 700; color: #666; font-size: 0.75rem; }
-        .section-header { background: #F1F5F9; color: var(--primary-color); font-weight: 800; text-align: left; padding-left: 15px; border-left: 5px solid var(--sk-red); height: 40px; }
-        .col-label { width: 150px; text-align: left; background: #FFFFFF; font-weight: 600; padding-left: 15px; border-right: 1px solid var(--border-color); }
-        .milestone-cell { background: #FFFDF5; vertical-align: middle; text-align: center; min-width: 100px; }
-        .milestone-display { color: var(--sk-orange); font-weight: 700; font-size: 0.8rem; word-break: keep-all; white-space: normal; line-height: 1.4; }
-        .rate-input { width: 40px; border: none; background: #F1F5F9; text-align: right; font-weight: 400; color: var(--sk-red); outline: none; border-radius: 4px; padding: 4px; font-size: 0.8rem; }
-        .blue-row { background: var(--accent-blue); font-weight: 700; color: #0056B3; }
-        .subtotal-row { background: #F9FAFB; font-weight: 700; color: #444; border-top: 1px double var(--border-color); }
-        .negative { color: var(--sk-red); font-weight: 600; }
-
-        .chart-section { margin-top: 20px; background: white; padding: 20px; border-radius: 15px; border: 1px solid var(--border-color); }
-        .charts-container { display: flex; gap: 15px; width: 100%; overflow-x: auto; }
-        .chart-item { flex: 1; min-width: 320px; background: #fcfcfc; border-radius: 10px; padding: 10px; border: 1px solid #f1f5f9; }
-        .chart-title { text-align: center; font-size: 0.85rem; font-weight: 800; margin-bottom: 10px; color: #475569; }
-        .chart-wrapper { width: 100%; height: 380px; }
-
-        .bottom-bar { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.98); backdrop-filter: blur(15px); padding: 18px 0 calc(env(safe-area-inset-bottom) + 12px); text-align: center; border-top: 1px solid var(--border-color); z-index: 1000; display: flex; justify-content: center; align-items: center; gap: 12px; }
-        .file-label { background: #444; color: white; padding: 14px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem; border: 1px solid #333; }
-        .btn-calc { background: var(--sk-red); color: white; border: none; padding: 14px 35px; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(224, 32, 32, 0.15); }
-        .btn-report { background: #1e293b; color: #facc15; border: none; padding: 14px 35px; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(8px); }
-        .modal-content { background-color: #ffffff; margin: 3vh auto; padding: 0; border-radius: 28px; width: 85%; height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5); }
-        .modal-header { background: #1e293b; color: white; padding: 25px 40px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
-        .report-body { padding: 45px; color: #1e293b; line-height: 1.8; }
-        .vip-card { background: #f8fafc; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; margin-bottom: 25px; }
-        .vip-badge { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; margin-bottom: 10px; display: inline-block; }
+        :root { --sk-red: #E02020; --sk-orange: #FF5000; --navy: #0A1F44; --bg-color: #F4F7F9; --border-color: #E2E8F0; }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--bg-color); padding: 0 30px 30px 30px; color: var(--navy); overflow-x: auto; letter-spacing: -0.02em; }
+        .header { display: flex; align-items: center; justify-content: center; position: sticky; top: 0; background-color: var(--bg-color); z-index: 1000; padding: 12px 0; border-bottom: 2px solid var(--sk-red); min-width: 1200px; }
+        .header h1 { margin: 0; font-size: 22px; font-weight: 800; text-align: center; color: var(--navy); }
+        .header .btn-group { position: absolute; right: 0; display: flex; gap: 6px; }
+        .btn-common { padding: 8px 15px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; border: none; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-common:hover { filter: brightness(90%); transform: translateY(-1px); }
+        .btn-fetch { background: var(--sk-red); color: white; }
+        .btn-manage { background: var(--navy); color: white; }
+        .btn-ai { background: linear-gradient(135deg, #6366F1 0%, #A855F7 100%); color: white; }
+        .table-wrapper { background: #fff; border-radius: 12px; border: 1px solid var(--border-color); overflow-x: visible; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); margin-top: 8px; margin-bottom: 35px; }
+        table { border-collapse: collapse; width: 100%; font-size: 11px; min-width: 1200px; table-layout: fixed; }
+        thead th { position: sticky; top: 58px; background: #F8FAFC; border: 1px solid var(--border-color); padding: 8px 2px; text-align: center; color: #64748B; font-weight: 700; font-size: 12px; z-index: 900; box-shadow: inset 0 -1px 0 var(--border-color); }
+        thead th.col-label { z-index: 901; }
+        .age-label { font-size: 9px; font-weight: 400; color: #94A3B8; display: block; margin-top: 1px; }
+        .section-header { background: #F8FAFC !important; color: var(--sk-red) !important; font-weight: 800; font-size: 13px; padding: 12px 20px; text-align: left !important; border-left: 6px solid var(--sk-red) !important; }
+        td { border: 1px solid var(--border-color); padding: 10px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .col-label { width: 120px; text-align: left; font-weight: 600; padding-left: 20px; background: #fff; white-space: nowrap; font-size: 11px; color: var(--navy); }
+        .amt-cell, .data-cell { font-weight: 500; color: #1A1A1A; text-align: right !important; padding-right: 15px !important; }
+        .rate-cell { text-align: center !important; font-weight: 500; color: #1A1A1A; }
+        .total-cell { text-align: right !important; font-weight: 800 !important; color: var(--navy) !important; background-color: #F8FAFC !important; padding-right: 15px !important; }
+        .ms-cell { text-align: center !important; font-weight: 800 !important; color: var(--sk-red) !important; font-size: 10px !important; }
+        .shortfall-row { background-color: #FFF9C4 !important; } 
+        .shortfall-row td { color: #C62828 !important; font-weight: 700 !important; } 
+        .chart-wrapper { display: flex; margin-bottom: 50px; background: #fff; padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); min-width: 1200px; box-sizing: border-box; }
+        .chart-left { flex: 0 0 60%; position: relative; height: 420px; }
+        .chart-spacer { flex: 0 0 10%; } 
+        .chart-right { flex: 0 0 30%; position: relative; height: 420px; display: flex; flex-direction: column; }
+        .chart-title { font-size: 15px; font-weight: 800; color: var(--navy); margin-top: 0; margin-bottom: 20px; text-align: center; line-height: 1.2; }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10, 31, 68, 0.7); z-index:2000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
+        .modal-content { background:#fff; width:95%; height:90%; border-radius:16px; display:flex; flex-direction:column; padding:30px; position:relative; overflow:hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .modal-header { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--sk-red); padding-bottom:18px; margin-bottom:25px; }
+        .modal-header h2 { margin:0; font-size:22px; font-weight: 800; color:var(--navy); }
+        .modal-body { flex:1; overflow:auto; padding-right: 10px; }
+        .edit-table { width:100%; border-collapse:collapse; font-size:10px; table-layout: auto; }
+        .edit-table td { border:1px solid var(--border-color); padding:4px 2px; }
+        .edit-table input { width:100%; border:none; outline:none; font-size: 10px; padding: 4px 5px; background: transparent; box-sizing: border-box; }
+        .edit-table input:focus { background: #F1F5F9; }
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); display: none; justify-content: center; align-items: center; z-index: 3000; font-weight: 800; color: var(--sk-red); font-size: 18px; }
+        .help-icon { cursor: help; text-decoration: underline dotted #cbd5e1; }
     </style>
 </head>
 <body>
+
+<div id="loading">분석 중...</div>
+
+<div id="ai-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🤖 실시간 은퇴 자산 프리미엄 컨설팅</h2>
+            <button class="btn-common btn-manage" style="background:#64748B;" onclick="closeAiModal()">닫기</button>
+        </div>
+        <div class="modal-body" id="ai-report-content"></div>
+    </div>
+</div>
+
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">데이터 관리 (시트 실시간 편집)</h2>
+            <button class="btn-common btn-manage" style="background:#64748B;" onclick="closeModal()">창 닫기</button>
+        </div>
+        <select class="btn-common" id="data-selector" onchange="loadEditUI()" style="width:250px; background:#fff; border:1px solid var(--border-color); margin-bottom:20px; color:var(--navy);">
+            <option value="">편집할 데이터를 선택하세요</option>
+            <option value="milestones">마일스톤</option>
+            <option value="rates">예상성장률 (%)</option>
+            <option value="assets">기준금액 (만원)</option>
+            <option value="living">생활비 (만원)</option>
+            <option value="baseIncomes">기초수입 (만원)</option>
+        </select>
+        <div class="modal-body">
+            <button id="add-row-btn" class="btn-common btn-fetch" style="display:none; background: var(--sk-orange); margin-bottom:15px;" onclick="appendNewRow()">+ 행 추가</button>
+            <div id="edit-container"></div>
+        </div>
+        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+            <button class="btn-common btn-fetch" onclick="processSave()">편집 완료 (저장)</button>
+            <button class="btn-common btn-manage" style="background:#ccc; color:#333;" onclick="closeModal()">취소</button>
+        </div>
+    </div>
+</div>
+
 <div class="container">
-    <div class="header"><h1>나의 해방일지 <span>v1.5</span></h1></div>
+    <div class="header">
+        <h1>나의 해방일지 <span style="color: var(--sk-red);">v7.8</span></h1>
+        <div class="btn-group">
+            <button class="btn-common btn-fetch" onclick="loadData()">데이터 조회</button>
+            <button class="btn-common btn-manage" onclick="openModal()">데이터 관리</button>
+            <button class="btn-common btn-ai" onclick="openAiModal()">AI 인사이트</button>
+        </div>
+    </div>
+    
     <div class="table-wrapper">
         <table id="main-table">
             <thead>
-                <tr><th colspan="2">구분 / 연도</th><script>for(let i=2026; i<=2039; i++) document.write(`<th>${i}</th>`);</script></tr>
-                <tr style="background:#FFF;"><td colspan="2" style="text-align:center; font-weight:700; color:#999; font-size:0.75rem;">연령</td><script>for(let i=57; i<=70; i++) document.write(`<td style="text-align:center; font-weight:700;">${i}세</td>`);</script></tr>
-                <tr><th colspan="2">마일스톤</th><script>for(let i=2026; i<=2039; i++) document.write(`<td class="milestone-cell"><div class="milestone-display" id="ms-${i}">-</div></td>`);</script></tr>
+                <tr>
+                    <th class="col-label" colspan="2">구분 / 연도</th>
+                    <script>
+                        for(let i=2026; i<=2039; i++) {
+                            let age = i - 1969;
+                            document.write(`<th>${i}<span class="age-label">(만 ${age}세)</span></th>`);
+                        }
+                    </script>
+                </tr>
             </thead>
-            <tbody>
-                <tr><td colspan="16" class="section-header">1. AI 예상 성장률</td></tr>
+            <tbody id="milestone-tbody">
+                <tr><td colspan="16" class="section-header">1. 주요 마일스톤</td></tr>
+            </tbody>
+            <tbody id="rate-tbody">
+                <tr><td colspan="16" class="section-header">2. 예상 성장률 (%)</td></tr>
+                <script>const rKeys=['주식','ISA','개인연금','IRP','CMA','퇴직금DC']; rKeys.forEach(n=>{ document.write(`<tr><td class="col-label" colspan="2">${n}</td>`); for(let i=2026; i<=2039; i++) document.write(`<td id="rate-${n}-${i}" class="rate-cell">0.00</td>`); document.write(`</tr>`); });</script>
+            </tbody>
+            <tbody id="asset-tbody">
+                <tr><td colspan="16" class="section-header">3. 기초 자산 현황 (단위: 만원)</td></tr>
                 <script>
-                    const rKeys = [{n:'주식',c:'r-stock'},{n:'ISA',c:'r-isa'},{n:'개인연금',c:'r-pension'},{n:'IRP',c:'r-irp'},{n:'CMA',c:'r-cma'},{n:'퇴직금DC',c:'r-dc'}];
-                    rKeys.forEach(a => {
-                        document.write(`<tr><td class="col-label" colspan="2">${a.n}</td>`);
-                        for(let i=0; i<14; i++) document.write(`<td><div style="display:flex;justify-content:flex-end;align-items:center;gap:2px;"><input type="number" class="rate-input ${a.c}" value="0" step="0.1"><span style="font-size:0.7rem;color:var(--sk-red);">%</span></div></td>`);
+                    const assetsConfig=[
+                        {name:'주식',key:'stock',info:''},
+                        {name:'ISA',key:'isa',info:'26~29년 매년 2,000만원 납입'},
+                        {name:'개인연금',key:'pension',info:'26~29년 매년 600만원 납입'},
+                        {name:'IRP',key:'irp',info:'26~29년 매년 300만원 납입'},
+                        {name:'CMA',key:'cma',info:''},
+                        {name:'퇴직금DC',key:'dc',info:'26년 612만원, 27~28년 9,673,800원, 29년 5,643,000원 납입 예정'}
+                    ];
+                    assetsConfig.forEach(a=>{
+                        document.write(`<tr><td class="col-label help-icon" colspan="2" title="${a.info}">${a.name}</td>`);
+                        for(let i=2026; i<=2039; i++) document.write(`<td id="amt-${a.key}-${i}" class="amt-cell">0</td>`);
                         document.write(`</tr>`);
                     });
+                    document.write(`<tr style="background-color: #F8FAFC;"><td class="col-label" colspan="2" style="background-color: #F8FAFC;">자산 합계</td>`);
+                    for(let i=2026; i<=2039; i++) document.write(`<td id="total-asset-${i}" class="total-cell">0</td>`);
+                    document.write(`</tr>`);
                 </script>
-                <tr><td colspan="16" class="section-header">2. 생활비 인출 전 자산 현황</td></tr>
-                <script>
-                    const aKeys = ['stock','isa','pension','irp','cma','dc'];
-                    const aNames = ['주식','ISA','개인연금저축','IRP','CMA','퇴직금DC'];
-                    aKeys.forEach((k, idx) => {
-                        document.write(`<tr class="sim-row" data-key="${k}"><td class="col-label" colspan="2">${aNames[idx]}</td>`);
-                        for(let i=0; i<14; i++) document.write(`<td class="amt">0</td>`);
-                        document.write(`</tr>`);
-                    });
-                </script>
-                <tr class="blue-row"><td colspan="2" class="col-label">기초자산 합계</td><script>for(let i=0; i<14; i++) document.write(`<td class="total-pre">0</td>`);</script></tr>
-                <tr><td colspan="16" class="section-header">3. 은퇴 후 생활비 및 인출 계획</td></tr>
-                <tr><td rowspan="2" style="background:#F8F9FB;text-align:center;font-weight:700;color:#888;font-size:0.75rem;border-right:1px solid var(--border-color);">목표<br>지출</td><td class="col-label">월 필요 생활비</td><script>for(let i=0;i<14;i++)document.write('<td class="val-m-exp">0</td>');</script></tr>
-                <tr><td class="col-label">연 필요자금</td><script>for(let i=0;i<14;i++)document.write('<td class="val-y-exp" style="color:var(--sk-red); font-weight:700;">0</td>');</script></tr>
-                <tr><td rowspan="4" style="background:#F8F9FB;text-align:center;font-weight:700;color:#888;font-size:0.75rem;border-right:1px solid var(--border-color);">기초<br>수입</td><td class="col-label">국민연금</td><script>for(let i=0;i<14;i++)document.write('<td class="val-pension">0</td>');</script></tr>
-                <tr><td class="col-label">개인연금</td><script>for(let i=0;i<14;i++)document.write('<td class="val-personal-p">0</td>');</script></tr>
-                <tr><td class="col-label">실업급여/기타</td><script>for(let i=0;i<14;i++)document.write('<td class="val-extra">0</td>');</script></tr>
-                <tr class="subtotal-row"><td class="col-label">기초수입 소계</td><script>for(let i=0;i<14;i++)document.write('<td class="val-income-subtotal">0</td>');</script></tr>
-                <tr style="background:#FDF2F2;"><td colspan="2" class="col-label" style="color:var(--sk-red); font-weight:800;">부족 생활비 합계</td><script>for(let i=0;i<14;i++)document.write('<td class="val-shortage negative">0</td>');</script></tr>
-                <tr><td rowspan="5" style="background:#F8F9FB;text-align:center;font-weight:700;color:#888;font-size:0.75rem;border-right:1px solid var(--border-color);">자산<br>인출</td><td class="col-label">1. CMA</td><script>for(let i=0;i<14;i++)document.write('<td class="w-cma negative">0</td>');</script></tr>
-                <tr><td class="col-label">2. ISA</td><script>for(let i=0;i<14;i++)document.write('<td class="w-isa negative">0</td>');</script></tr>
-                <tr><td class="col-label">3. 주식</td><script>for(let i=0;i<14;i++)document.write('<td class="w-stock negative">0</td>');</script></tr>
-                <tr><td class="col-label">4. 퇴직금DC</td><script>for(let i=0;i<14;i++)document.write('<td class="w-dc negative">0</td>');</script></tr>
-                <tr class="subtotal-row"><td class="col-label">자산인출 합계</td><script>for(let i=0;i<14;i++)document.write('<td class="val-withdraw-subtotal-display" style="color:var(--sk-red);">0</td>');</script></tr>
-                <tr><td colspan="16" class="section-header">4. 생활비 인출 후 자산 현황</td></tr>
-                <script>
-                    aKeys.forEach((k, idx) => {
-                        document.write(`<tr class="final-asset-row" data-fkey="${k}"><td class="col-label" colspan="2">${aNames[idx]}</td>`);
-                        for(let i=0; i<14; i++) document.write(`<td class="f-amt">0</td>`);
-                        document.write(`</tr>`);
-                    });
-                </script>
-                <tr class="blue-row"><td colspan="2" class="col-label" style="border:none;">최종자산 합계</td><script>for(let i=0; i<14; i++) document.write(`<td class="total-post" style="border:none;">0</td>`);</script></tr>
+            </tbody>
+            <tbody id="plan-tbody">
+                <tr><td colspan="16" class="section-header">4. 은퇴 생활비 및 인출 계획 (단위: 만원)</td></tr>
+                <tr class="shortfall-row"><td class="col-label" colspan="2">월필요생활비</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="plan-monthly-${i}" class="data-cell"></td>`);</script></tr>
+                <tr class="shortfall-row"><td class="col-label" colspan="2">연필요생활비</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="plan-yearly-${i}" class="data-cell"></td>`);</script></tr>
+                <tr><td class="col-label" colspan="2">국민연금</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="plan-pub-pension-${i}" class="data-cell"></td>`);</script></tr>
+                <tr><td class="col-label" colspan="2">개인연금</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="plan-priv-pension-${i}" class="data-cell"></td>`);</script></tr>
+                <tr><td class="col-label" colspan="2">실업수당</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="plan-unemployment-${i}" class="data-cell"></td>`);</script></tr>
+                <tr style="background-color: #F8FAFC;"><td class="col-label" colspan="2" style="font-weight:700;">수입합계</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="plan-income-sum-${i}" class="total-cell"></td>`);</script></tr>
+                <tr class="shortfall-row"><td class="col-label" colspan="2">부족한생활비</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="plan-shortfall-${i}" class="data-cell"></td>`);</script></tr>
+                <tr><td class="col-label" colspan="2">CMA인출</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="withdraw-cma-${i}" class="data-cell">0</td>`);</script></tr>
+                <tr><td class="col-label" colspan="2">ISA인출</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="withdraw-isa-${i}" class="data-cell">0</td>`);</script></tr>
+                <tr><td class="col-label" colspan="2">주식인출</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="withdraw-stock-${i}" class="data-cell">0</td>`);</script></tr>
+                <tr><td class="col-label" colspan="2">퇴직금DC인출</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="withdraw-dc-${i}" class="data-cell">0</td>`);</script></tr>
+                <tr style="background-color: #F8FAFC;"><td class="col-label" colspan="2" style="font-weight:700;">인출합계</td><script>for(let i=2026; i<=2039; i++) document.write(`<td id="withdraw-sum-${i}" class="total-cell">0</td>`);</script></tr>
+            </tbody>
+            <tbody id="final-asset-tbody">
+                <tr><td colspan="16" class="section-header">5. 인출 후 자산 현황 (단위: 만원)</td></tr>
+                <script>const fAssetsKeys=['stock','isa','pension','irp','cma','dc']; const fAssetsNames=['주식','ISA','개인연금','IRP','CMA','퇴직금DC']; fAssetsNames.forEach((n, idx)=>{ document.write(`<tr><td class="col-label" colspan="2">${n}</td>`); for(let i=2026; i<=2039; i++) document.write(`<td id="final-amt-${fAssetsKeys[idx]}-${i}" class="amt-cell">0</td>`); document.write(`</tr>`); }); document.write(`<tr style="background-color: #F8FAFC;"><td class="col-label" colspan="2" style="background-color: #F8FAFC;">자산 합계</td>`); for(let i=2026; i<=2039; i++) document.write(`<td id="final-total-asset-${i}" class="total-cell">0</td>`); document.write(`</tr>`);</script>
             </tbody>
         </table>
     </div>
 
-    <div class="chart-section">
-        <div id="chartChecks" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:15px;"></div>
-        <div class="charts-container">
-            <div class="chart-item"><div class="chart-title">🔴 HIGH Scenario</div><div class="chart-wrapper"><canvas id="chartHigh"></canvas></div></div>
-            <div class="chart-item"><div class="chart-title">🔵 MID Scenario</div><div class="chart-wrapper"><canvas id="chartMid"></canvas></div></div>
-            <div class="chart-item"><div class="chart-title">🟢 LOW Scenario</div><div class="chart-wrapper"><canvas id="chartLow"></canvas></div></div>
-        </div>
-    </div>
-</div>
-
-<div class="bottom-bar">
-    <label for="excel-upload" class="file-label">Excel 업로드</label>
-    <input type="file" id="excel-upload" accept=".xlsx, .xls" style="display:none;" onchange="handleExcel(event)">
-    <button class="btn-calc" onclick="runSimulationSequence()">자산 현행화</button>
-    <button class="btn-report" onclick="openReport()">AI 은퇴자산플래너</button>
-</div>
-
-<div id="reportModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 style="margin:0;">🎖️ VIP Exclusive: 자산 보존 및 통합 전략 리포트</h2>
-            <span style="font-size:35px;cursor:pointer;" onclick="closeModal()">&times;</span>
-        </div>
-        <div class="report-body" id="reportContent"></div>
+    <div class="chart-wrapper">
+        <div class="chart-left"><div class="chart-title">연도별 자산 추이 (인출 후)</div><canvas id="lineChart"></canvas></div>
+        <div class="chart-spacer"></div>
+        <div class="chart-right"><div class="chart-title" id="donutTitle">자산 구성비</div><canvas id="donutChart"></canvas></div>
     </div>
 </div>
 
 <script>
-    const pN = s => (!s && s !== 0) ? 0 : (parseFloat(String(s).replace(/[^0-9.-]+/g, '')) || 0);
-    const chartIds = ['total', 'stock', 'isa', 'pension', 'irp', 'cma', 'dc'];
-    const chartNames = ['총계', '주식', 'ISA', '개인연금저축', 'IRP', 'CMA', '퇴직금DC'];
-    const chartColors = ['#1a73e8', '#E02020', '#FF5000', '#FFB400', '#222222', '#00B050', '#7030A0'];
-    let multiCharts = { high: null, mid: null, low: null };
-    let exData = { base: { stock:0, isa:0, pension:0, irp:0, cma:0, dc:0 }, income: { public: {}, personal: {}, extra: {} }, scenarioRates: { high:[], mid:[], low:[] }, expense: 4500000 };
+    const API_URL = "https://script.google.com/macros/s/AKfycbx4X6KNr4IRXM-YinUz7ZIkJk-SDliOADa1jicwQw1aVyVVNiyDwemjrBPUGVW9NiWY_A/exec";
+    let lineChartInstance = null; let donutChartInstance = null; let chartDataStore = {};
+    let globalRawData = null;
 
-    function handleExcel(event) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-            const findSheet = kw => workbook.SheetNames.find(n => n.replace(/\s/g, '').includes(kw));
-            const bNm = findSheet('기준금액'), iNm = findSheet('기초수입'), yNm = findSheet('성장률'), mNm = findSheet('마일스톤');
-            
-            if(bNm) XLSX.utils.sheet_to_json(workbook.Sheets[bNm]).forEach(row => {
-                const type = String(Object.values(row)[0] || "").trim();
-                const yr = pN(row['기준년도'] || row['연도']), amt = pN(row['기준금액(원)'] || row['기준금액']);
-                if(yr === 2026) {
-                    if(type.includes('주식')) exData.base.stock = amt; else if(type.includes('ISA')) exData.base.isa = amt;
-                    else if(type.includes('연금')) exData.base.pension = amt; else if(type.includes('IRP')) exData.base.irp = amt;
-                    else if(type.includes('CMA')) exData.base.cma = amt; else if(type.includes('퇴직금') || type.includes('DC')) exData.base.dc = amt;
+    async function loadData() {
+        document.getElementById('loading').style.display = 'flex';
+        try {
+            const res = await fetch(API_URL);
+            const d = await res.json();
+            globalRawData = d;
+            if(d.milestones) {
+                const milestoneTbody = document.getElementById('milestone-tbody');
+                milestoneTbody.innerHTML = '<tr><td colspan="16" class="section-header">1. 주요 마일스톤</td></tr>';
+                let colStacks = Array.from({length: 14}, () => []);
+                d.milestones.forEach((row, idx) => { if(idx === 0) return; for(let i=1; i<=14; i++){ if(row[i]) colStacks[i-1].push(row[i].toString()); } });
+                const maxRows = Math.max(...colStacks.map(s => s.length), 0);
+                for(let r=1; r<=maxRows; r++){
+                    let tr = document.createElement('tr'); tr.innerHTML = `<td class="col-label" colspan="2">이벤트 ${r}</td>`;
+                    for(let i=0; i<14; i++){ let td = document.createElement('td'); td.className = "ms-cell"; td.innerText = colStacks[i][r-1] || ""; tr.appendChild(td); }
+                    milestoneTbody.appendChild(tr);
                 }
-            });
-            if(iNm) XLSX.utils.sheet_to_json(workbook.Sheets[iNm], { header: 1 }).forEach(row => {
-                const yr = pN(row[0]); if(yr) { exData.income.public[yr] = pN(row[3]); exData.income.personal[yr] = pN(row[6]); exData.income.extra[yr] = (yr===2029||yr===2030)?pN(row[9]):0; }
-            });
-            if(yNm) {
-                const yrRows = XLSX.utils.sheet_to_json(workbook.Sheets[yNm], { header: 1 });
-                exData.scenarioRates = { high:[], mid:[], low:[] };
-                for(let i=0; i<14; i++) {
-                    const targetYear = 2026 + i;
-                    const rowIdx = targetYear - 2024;
-                    const rowData = yrRows[rowIdx] || [];
-                    let h=[], m=[], l=[];
-                    for(let assetIdx=0; assetIdx<6; assetIdx++) {
-                        const startCol = 1 + (assetIdx * 3);
-                        h.push(pN(rowData[startCol])); m.push(pN(rowData[startCol+1])); l.push(pN(rowData[startCol+2]));
-                        document.querySelectorAll(`.r-${['stock','isa','pension','irp','cma','dc'][assetIdx]}`)[i].value = pN(rowData[startCol+1]);
+            }
+            const growthRates = {}; 
+            if(d.rates) {
+                d.rates.forEach(row => {
+                    let label = row[0] ? row[0].toString().trim() : "";
+                    let key = label.includes("주식") ? "주식" : label.includes("ISA") ? "ISA" : label.includes("개인연금") ? "개인연금" : label.includes("IRP") ? "IRP" : label.includes("CMA") ? "CMA" : (label.includes("DC") || label.includes("퇴직금")) ? "퇴직금DC" : "";
+                    if(key) { growthRates[key] = {}; for(let i=1; i<=14; i++){ const year = 2025 + i; const rateVal = parseFloat(row[i]) || 0; growthRates[key][year] = rateVal; const cell = document.getElementById(`rate-${key}-${year}`); if(cell) cell.innerText = rateVal.toFixed(2); } }
+                });
+            }
+            const baseBalances = {}; 
+            if(d.assets) {
+                const rMap = { 'stock':'주식', 'isa':'ISA', 'pension':'개인연금', 'irp':'IRP', 'cma':'CMA', 'dc':'퇴직금DC' };
+                const yearlyTotals = {}; for(let y=2026; y<=2039; y++) yearlyTotals[y] = 0;
+                d.assets.forEach(row => {
+                    const label = row[0] ? row[0].toString().trim() : "";
+                    let key = label.includes("주식") ? "stock" : label.includes("ISA") ? "isa" : label.includes("개인연금") ? "pension" : label.includes("IRP") ? "irp" : label.includes("CMA") ? "cma" : label.includes("DC") ? "dc" : "";
+                    if(key) { 
+                        baseBalances[key] = {}; let prev = 0; 
+                        for(let i=1; i<=14; i++){ 
+                            const year = 2025+i; 
+                            const rate = (growthRates[rMap[key]] && growthRates[rMap[key]][year]) ? growthRates[rMap[key]][year] : 0;
+                            let base = parseFloat(row[i])||0;
+                            if(key === 'dc') {
+                                if(year === 2026) base += 612;
+                                else if(year === 2027 || year === 2028) base += 967;
+                                else if(year === 2029) base += 564;
+                            }
+                            if(year >= 2030) base = 0; 
+                            let cur = (i===1) ? base * (1 + rate/100) : (prev + base) * (1 + rate/100); 
+                            const finalValue = Math.round(cur/10000); baseBalances[key][year] = finalValue; document.getElementById(`amt-${key}-${year}`).innerText = finalValue.toLocaleString(); yearlyTotals[year]+=finalValue; prev = cur; 
+                        } 
                     }
-                    exData.scenarioRates.high.push(h); exData.scenarioRates.mid.push(m); exData.scenarioRates.low.push(l);
+                });
+                for(let y=2026; y<=2039; y++) document.getElementById(`total-asset-${y}`).innerText = yearlyTotals[y].toLocaleString();
+            }
+            const yearlyNeeds = {};
+            if(d.living) {
+                const yRow = d.living[5]; const mRow = d.living[3];
+                for(let i=1; i<=14; i++){ const year = 2025+i; yearlyNeeds[year] = Math.round(parseFloat(yRow[i])/10000)||0; document.getElementById(`plan-monthly-${year}`).innerText = Math.round(parseFloat(mRow[i])/10000).toLocaleString(); document.getElementById(`plan-yearly-${year}`).innerText = yearlyNeeds[year].toLocaleString(); }
+            }
+            if(d.baseIncomes) {
+                const incomeTotals = {}; for(let y=2026; y<=2039; y++) incomeTotals[y] = 0;
+                d.baseIncomes.forEach(row => {
+                    const label = row[0].toString().trim();
+                    let prefix = label.includes("국민연금") ? "plan-pub-pension" : label.includes("개인연금") ? "plan-priv-pension" : label.includes("실업수당") ? "plan-unemployment" : "";
+                    if(prefix){ for(let i=1; i<=14; i++){ const year = 2025+i; const val = Math.round(parseFloat(row[i])/10000)||0; document.getElementById(`${prefix}-${year}`).innerText = val.toLocaleString(); incomeTotals[year]+=val; } }
+                });
+                const cumulativeWithdrawals = { 'stock':0, 'isa':0, 'cma':0, 'dc':0 };
+                for(let year=2026; year<=2039; year++){
+                    document.getElementById(`plan-income-sum-${year}`).innerText = incomeTotals[year].toLocaleString();
+                    let shortfall = Math.max(0, yearlyNeeds[year] - incomeTotals[year]);
+                    document.getElementById(`plan-shortfall-${year}`).innerText = shortfall.toLocaleString();
+                    const order = ['cma', 'isa', 'stock', 'dc'];
+                    let yearlyWithdrawSum = 0;
+                    order.forEach(key => {
+                        let curRemain = Math.max(0, baseBalances[key][year] - cumulativeWithdrawals[key]);
+                        let withdrawAmt = (shortfall > 0 && curRemain > 0) ? Math.min(shortfall, curRemain) : 0;
+                        cumulativeWithdrawals[key] += withdrawAmt; shortfall -= withdrawAmt; yearlyWithdrawSum += withdrawAmt;
+                        document.getElementById(`withdraw-${key}-${year}`).innerText = withdrawAmt.toLocaleString();
+                        document.getElementById(`final-amt-${key}-${year}`).innerText = Math.max(0, baseBalances[key][year] - cumulativeWithdrawals[key]).toLocaleString();
+                    });
+                    ['pension', 'irp'].forEach(k => { document.getElementById(`final-amt-${k}-${year}`).innerText = baseBalances[k][year].toLocaleString(); });
+                    document.getElementById(`withdraw-sum-${year}`).innerText = yearlyWithdrawSum.toLocaleString();
+                    let fTotal = 0;
+                    ['stock','isa','pension','irp','cma','dc'].forEach(k => { fTotal += (cumulativeWithdrawals[k] !== undefined) ? Math.max(0, baseBalances[k][year] - cumulativeWithdrawals[k]) : baseBalances[k][year]; });
+                    document.getElementById(`final-total-asset-${year}`).innerText = fTotal.toLocaleString();
                 }
             }
-            if(mNm) XLSX.utils.sheet_to_json(workbook.Sheets[mNm], { header: 1 }).forEach(row => { const yr = pN(row[0]); if(yr >= 2026 && yr <= 2039 && row[1]) document.getElementById(`ms-${yr}`).innerText = row[1]; });
-            runSimulationSequence();
-        };
-        reader.readAsArrayBuffer(event.target.files[0]);
+            prepareChartData(); renderCharts();
+        } catch (e) { alert("데이터 로드 오류"); }
+        finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    function runSimulation(targetRates, isUpdateTable) {
-        let preCur = { ...exData.base }, postCur = { ...exData.base };
-        const history = chartIds.reduce((acc, id) => { acc[id] = []; return acc; }, {});
-        const keys = ['stock', 'isa', 'pension', 'irp', 'cma', 'dc'];
+    function prepareChartData() { const years=[]; for(let i=2026; i<=2039; i++) years.push(i); const keys=['stock', 'isa', 'pension', 'irp', 'cma', 'dc']; years.forEach(y=>{ chartDataStore[y]=keys.map(k=>parseInt(document.getElementById(`final-amt-${k}-${y}`).innerText.replace(/,/g,''))||0); }); }
+    
+    function renderCharts() { 
+        const years=Object.keys(chartDataStore).map(Number); 
+        const keys=['stock', 'isa', 'pension', 'irp', 'cma', 'dc']; 
+        const names=['주식','ISA','개인연금','IRP','CMA','퇴직금DC']; 
+        const colors=['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']; 
+        const lineDatasets = keys.map((k,idx)=>({ label: names[idx], data: years.map(y=>parseInt(document.getElementById(`final-amt-${k}-${y}`).innerText.replace(/,/g,''))||0), borderColor: colors[idx], backgroundColor: colors[idx], fill: false, tension: 0.1, pointRadius: 4, isTotal: false })); 
+        const totalData = years.map(y=>parseInt(document.getElementById(`final-total-asset-${y}`).innerText.replace(/,/g,''))||0); 
+        lineDatasets.push({ label: '자산 합계', data: totalData, borderColor: '#0A1F44', borderWidth: 3, borderDash: [5, 5], fill: false, pointRadius: 5, isTotal: true }); 
 
-        for(let i=0; i<14; i++) {
-            const yr = 2026 + i;
-            
-            // [CMA에서 타 계좌로의 추가 불입 로직]
-            if (yr >= 2027 && yr <= 2030) {
-                let add_pension = 6000000; // 개인연금저축 (2027~2030 반영)
-                let add_isa = (yr <= 2029) ? 20000000 : 0; // ISA (2027~2029 반영)
-                let add_irp = (yr <= 2029) ? 3000000 : 0; // 개인 IRP (2027~2029 반영)
-
-                // CMA에서 자금 충당
-                if (postCur.cma >= add_pension) { postCur.cma -= add_pension; postCur.pension += add_pension; }
-                if (postCur.cma >= add_irp) { postCur.cma -= add_irp; postCur.irp += add_irp; }
-                // CMA 바닥나면 ISA 불입 제외
-                if (postCur.cma >= add_isa) { postCur.cma -= add_isa; postCur.isa += add_isa; } 
-                
-                // 불입 후 기초 자산에 업데이트 (성장률 적용 전)
-                preCur = { ...postCur }; 
+        if(lineChartInstance) lineChartInstance.destroy(); 
+        lineChartInstance = new Chart(document.getElementById('lineChart'), {
+            type: 'line', data: { labels: years, datasets: lineDatasets },
+            options: {
+                responsive: true, maintainAspectRatio: false, 
+                // [수정] 선 근처에만 마우스를 대도 상세 내역이 나오도록 인터랙션 모드 수정
+                interaction: { mode: 'index', intersect: false },
+                plugins: { 
+                    legend: { position: 'bottom', labels: { padding: 20, font: { size: 11 } } },
+                    tooltip: { 
+                        padding: 12, 
+                        callbacks: { 
+                            label: function(context) { 
+                                const year = years[context.dataIndex]; 
+                                updateDonutChart(year); 
+                                if (context.dataset.label === '자산 합계') { 
+                                    // 자산 합계 툴팁: 합계 아래에 계좌별 상세 금액 리스트 추가
+                                    const allData = keys.map((k, i) => { 
+                                        const val = parseInt(document.getElementById(`final-amt-${k}-${year}`).innerText.replace(/,/g,'')); 
+                                        return names[i] + ": " + val.toLocaleString() + "만"; 
+                                    });
+                                    allData.unshift("합계: " + context.parsed.y.toLocaleString() + "만"); 
+                                    return allData; 
+                                } else { 
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + '만'; 
+                                } 
+                            } 
+                        } 
+                    } 
+                },
+                scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { callback: v => v.toLocaleString() + '만', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } }
             }
-
-            if(i > 0) keys.forEach((k, idx) => {
-                const rVal = targetRates ? targetRates[i][idx] : pN(document.querySelectorAll('.r-' + k)[i].value);
-                const rate = 1 + (rVal / 100);
-                preCur[k] = Math.round(preCur[k] * rate); postCur[k] = Math.round(postCur[k] * rate);
-            });
-
-            if(isUpdateTable) {
-                keys.forEach(k => document.querySelector(`tr[data-key="${k}"]`).querySelectorAll('.amt')[i].innerText = preCur[k].toLocaleString());
-                document.querySelectorAll('.total-pre')[i].innerText = keys.reduce((s,k)=>s+preCur[k],0).toLocaleString();
-            }
-
-            let yExp = (yr >= 2029) ? Math.round(exData.expense * Math.pow(1.025, yr - 2029)) * 12 : 0;
-            let incTotal = (exData.income.public[yr]||0) + (exData.income.personal[yr]||0) + (exData.income.extra[yr]||0);
-            let shortage = Math.max(0, yExp - incTotal);
-
-            if(isUpdateTable) {
-                document.querySelectorAll('.val-m-exp')[i].innerText = Math.round(yExp/12).toLocaleString();
-                document.querySelectorAll('.val-y-exp')[i].innerText = yExp.toLocaleString();
-                document.querySelectorAll('.val-pension')[i].innerText = (exData.income.public[yr]||0).toLocaleString();
-                document.querySelectorAll('.val-personal-p')[i].innerText = (exData.income.personal[yr]||0).toLocaleString();
-                document.querySelectorAll('.val-extra')[i].innerText = (exData.income.extra[yr]||0).toLocaleString();
-                document.querySelectorAll('.val-income-subtotal')[i].innerText = incTotal.toLocaleString();
-                document.querySelectorAll('.val-shortage')[i].innerText = shortage.toLocaleString();
-            }
-
-            let wCma=0, wIsa=0, wStock=0, wDc=0;
-            if(shortage > 0) {
-                wCma = Math.min(postCur.cma, shortage); postCur.cma -= wCma; shortage -= wCma;
-                if(shortage > 0) { wIsa = Math.min(postCur.isa, shortage); postCur.isa -= wIsa; shortage -= wIsa; }
-                if(shortage > 0) { wStock = Math.min(postCur.stock, shortage); postCur.stock -= wStock; shortage -= wStock; }
-                if(shortage > 0) { wDc = Math.min(postCur.dc, shortage); postCur.dc -= wDc; shortage -= wDc; }
-            }
-            if(isUpdateTable) {
-                document.querySelectorAll('.w-cma')[i].innerText = wCma.toLocaleString();
-                document.querySelectorAll('.w-isa')[i].innerText = wIsa.toLocaleString();
-                document.querySelectorAll('.w-stock')[i].innerText = wStock.toLocaleString();
-                document.querySelectorAll('.w-dc')[i].innerText = wDc.toLocaleString();
-                document.querySelectorAll('.val-withdraw-subtotal-display')[i].innerText = (wCma+wIsa+wStock+wDc).toLocaleString();
-            }
-
-            keys.forEach(k => {
-                history[k].push(postCur[k]);
-                if(isUpdateTable) document.querySelector(`tr[data-fkey="${k}"]`).querySelectorAll('.f-amt')[i].innerText = postCur[k].toLocaleString();
-            });
-            const total = keys.reduce((s,k)=>s+postCur[k],0);
-            history['total'].push(total);
-            if(isUpdateTable) document.querySelectorAll('.total-post')[i].innerText = total.toLocaleString();
-        }
-        return history;
+        }); 
+        updateDonutChart(2039); 
+    }
+    
+    function updateDonutChart(year) { 
+        const names=['주식','ISA','개인연금','IRP','CMA','퇴직금DC']; 
+        const colors=['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']; 
+        const data=chartDataStore[year]; 
+        document.getElementById('donutTitle').innerText=`${year}년 자산 구성비`; 
+        if(donutChartInstance){ donutChartInstance.data.datasets[0].data=data; donutChartInstance.update('none'); }
+        else{ donutChartInstance=new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:names,datasets:[{data:data,backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{padding:15,font:{size:11}}}}}}); } 
     }
 
-    function runSimulationSequence() {
-        const hMid = runSimulation(null, true);
-        const hHigh = runSimulation(exData.scenarioRates.high.length ? exData.scenarioRates.high : null, false);
-        const hLow = runSimulation(exData.scenarioRates.low.length ? exData.scenarioRates.low : null, false);
-        const midMaxVal = Math.max(...hMid.total) * 1.1;
-        updateCharts(hHigh, hMid, hLow, midMaxVal);
+    function openModal() { document.getElementById('modal-overlay').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+    function loadEditUI() {
+        const type = document.getElementById('data-selector').value;
+        const container = document.getElementById('edit-container');
+        const addBtn = document.getElementById('add-row-btn');
+        if(!type) { container.innerHTML = '<p style="text-align:center; color:#999; margin-top:50px;">데이터를 선택하면 편집 화면이 나타납니다.</p>'; addBtn.style.display='none'; return; }
+        addBtn.style.display = 'block';
+        const data = globalRawData[type];
+        if(!data || data.length === 0) { container.innerHTML = "데이터가 없습니다."; return; }
+        let tableHtml = `<table class="edit-table"><thead><tr>`;
+        data[0].forEach((cell, i) => { tableHtml += `<th>${i === 0 ? '항목' : (2025+i) + '년'}</th>`; });
+        tableHtml += `<th>관리</th></tr></thead><tbody>`;
+        data.forEach((row) => { tableHtml += `<tr>`; row.forEach((cell) => { tableHtml += `<td><input type="text" value="${cell}"></td>`; }); tableHtml += `<td><button onclick="this.parentElement.parentElement.remove()">X</button></td></tr>`; });
+        tableHtml += `</tbody></table>`; container.innerHTML = tableHtml;
     }
-
-    function updateCharts(hHigh, hMid, hLow, yMax) {
-        multiCharts.high = createScenarioChart('chartHigh', hHigh, yMax);
-        multiCharts.mid = createScenarioChart('chartMid', hMid, yMax);
-        multiCharts.low = createScenarioChart('chartLow', hLow, yMax);
-        renderCheckboxes();
+    function appendNewRow() {
+        const tbody = document.querySelector('#edit-container tbody'); if(!tbody) return;
+        const colCount = tbody.parentElement.rows[0].cells.length - 1;
+        let newRow = document.createElement('tr');
+        for(let i=0; i<colCount; i++) { let td = document.createElement('td'); td.innerHTML = `<input type="text" value="">`; newRow.appendChild(td); }
+        let delTd = document.createElement('td'); delTd.innerHTML = `<button onclick="this.parentElement.parentElement.remove()">X</button>`; newRow.appendChild(delTd);
+        tbody.appendChild(newRow);
     }
-
-    function createScenarioChart(canvasId, history, yMax) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        if(Chart.getChart(canvasId)) Chart.getChart(canvasId).destroy();
-        return new Chart(ctx, { type: 'line', data: { labels: Array.from({length:14}, (_,i)=>2026+i), datasets: chartIds.map((id, idx) => ({ label: chartNames[idx], data: history[id], borderColor: chartColors[idx], backgroundColor: id==='total'?'rgba(26,115,232,0.05)':'transparent', borderWidth: id==='total'?3:2, tension: 0.3, fill: id==='total' })) }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: yMax, ticks: { callback: v => (v/100000000).toFixed(1) + '억' } } } } });
+    async function processSave() {
+        const type = document.getElementById('data-selector').value;
+        if(!type) return; if(!confirm("[" + type + "] 시트 데이터를 저장하시겠습니까?")) return;
+        const rows = document.getElementById('edit-container').querySelectorAll('tbody tr');
+        let exportData = [];
+        rows.forEach(r => { let rowData = []; let inputs = r.querySelectorAll('input'); inputs.forEach(inp => rowData.push(inp.value.toString().replace(/,/g, '').trim())); if(rowData[0] !== "") exportData.push(rowData); });
+        document.getElementById('loading').innerText = "데이터 저장 요청 중...";
+        document.getElementById('loading').style.display = 'flex';
+        try { 
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update', type: type, data: exportData }) }); 
+            alert("저장 요청을 보냈습니다. 잠시 후 '데이터 조회' 버튼으로 변경된 값을 확인하세요."); 
+            location.reload(); 
+        } catch (e) { alert("연결 오류가 발생했습니다. 네트워크를 확인하세요."); } 
+        finally { document.getElementById('loading').style.display = 'none'; }
     }
-
-    function renderCheckboxes() {
-        const ctrl = document.getElementById('chartChecks'); ctrl.innerHTML = '';
-        const allLbl = document.createElement('label'); allLbl.style.cssText = "font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:5px; background:#f0f0f0; padding:4px 10px; border-radius:15px; border:1px solid #ccc; font-weight:700;";
-        allLbl.innerHTML = `<input type="checkbox" id="all-check" checked onchange="toggleAll(this)"> All`;
-        ctrl.appendChild(allLbl);
-        chartNames.forEach((name, idx) => {
-            const lbl = document.createElement('label'); lbl.style.cssText = "font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:5px; background:white; padding:4px 10px; border-radius:15px; border:1px solid #ddd;";
-            lbl.innerHTML = `<input type="checkbox" class="ds-check" checked onchange="toggleDS(${idx}, this)"> <span style="color:${chartColors[idx]}">●</span> ${name}`;
-            ctrl.appendChild(lbl);
-        });
+    function openAiModal() { generatePremiumAiReport(); document.getElementById('ai-modal').style.display = 'flex'; }
+    function closeAiModal() { document.getElementById('ai-modal').style.display = 'none'; }
+    function generatePremiumAiReport() {
+        const container = document.getElementById('ai-report-content');
+        const years = []; for(let i=2026; i<=2039; i++) years.push(i);
+        const totals = years.map(y => parseInt(document.getElementById(`final-total-asset-${y}`).innerText.replace(/,/g, '')));
+        const shortfallValues = years.map(y => parseInt(document.getElementById(`plan-shortfall-${y}`).innerText.replace(/,/g, '')));
+        let depletionYear = null; let maxShortfall = 0; let maxShortfallYear = 2026;
+        for(let i=0; i<years.length; i++) { if(totals[i] <= 0 && !depletionYear) depletionYear = years[i]; if(shortfallValues[i] > maxShortfall) { maxShortfall = shortfallValues[i]; maxShortfallYear = years[i]; } }
+        const startTotal = totals[0]; const endTotal = totals[totals.length-1];
+        const growthRate = (((endTotal - startTotal) / startTotal) * 100).toFixed(1);
+        container.innerHTML = `<div class="summary-banner"><div class="summary-tile"><div class="tile-label">최종 예상 자산 (2039)</div><div class="tile-value">${endTotal.toLocaleString()}만</div></div><div class="summary-tile"><div class="tile-label">자산 안전성</div><div class="tile-value ${depletionYear?'text-down':'text-up'}">${depletionYear?depletionYear+'년 소진':'안정적'}</div></div><div class="summary-tile"><div class="tile-label">누적 수익률</div><div class="tile-value ${growthRate>0?'text-up':'text-down'}">${growthRate}%</div></div><div class="summary-tile"><div class="tile-label">최대 순부족 연도</div><div class="tile-value">${maxShortfallYear}년</div></div></div><div class="ai-report-grid"><div class="ai-card" style="border-top:4px solid #3b82f6;"><h3>📂 1. 자산 인출 전략</h3><p>현재 <b>CMA → ISA → 주식 → 퇴직금DC</b> 순서의 인출 전략은 복리 효과가 큰 자산을 최후에 배치한 우수 전략입니다.</p></div><div class="ai-card" style="border-top:4px solid #10b981;"><h3>💰 2. 현금 흐름 설계</h3><p>국민연금 수령 전 소득 공백기(Pension Bridge)를 안정적으로 방어하고 있습니다. 특히 ${maxShortfallYear}년의 현금 부족을 대비하십시오.</p></div><div class="ai-card" style="border-top:4px solid #f59e0b;"><h3>⚖️ 3. 세무 최적화</h3><p>퇴직금DC 인출 시점을 늦춰 연금소득세 이연 효과를 극대화하고 있습니다. 연 1,500만원 초과 인출 시 종합과세 여부를 점검하십시오.</p></div><div class="ai-card" style="border-top:4px solid #ef4444;"><h3>⚠️ 4. 리스크 관리</h3><p>현재 성장률이 물가 상승률을 상회하고 있어 구매력 저하 위험은 낮으나, 2039년 이후를 위한 수익 창출형 자산 유지가 필요합니다.</p></div></div>`;
     }
-
-    function toggleAll(allCb) {
-        document.querySelectorAll('.ds-check').forEach((cb, i) => { cb.checked = allCb.checked; Object.values(multiCharts).forEach(c => { if(c) c.setDatasetVisibility(i, allCb.checked); }); });
-        Object.values(multiCharts).forEach(c => { if(c) c.update(); });
-    }
-
-    function toggleDS(idx, cb) {
-        Object.values(multiCharts).forEach(c => { if(c) { c.setDatasetVisibility(idx, cb.checked); c.update(); } });
-        document.getElementById('all-check').checked = Array.from(document.querySelectorAll('.ds-check')).every(c => c.checked);
-    }
-
-    function openReport() {
-        const data = runSimulation(null, false);
-        const lastTotal = data.total[data.total.length - 1];
-        const isExhausted = data.total.some(v => v <= 0);
-        const exhaustYear = isExhausted ? 2026 + data.total.findIndex(v => v <= 0) : '2040년 이후';
-        const content = document.getElementById('reportContent');
-        content.innerHTML = `
-            <div class="report-section">
-                <h2>1. 자산 변곡점 분석: '소득의 계곡' 방어 전술 (2029-2033)</h2>
-                <div class="vip-card">
-                    <span class="vip-badge">Strategic Defense</span>
-                    <h3>실업급여 연계 브릿지 및 배당소득 스위칭</h3>
-                    <p>의뢰인의 가장 치명적인 리스크는 퇴직 직후인 2029년부터 국민연금이 개시되는 2034년까지의 5년입니다. 실업급여 수령액을 생활비가 아닌 <b>CMA 예비비(Buffer)</b>로 격리하여 시장 변동성에 대응하는 안전판을 구축하십시오.</p>
-                </div>
-            </div>
-            <div class="report-section">
-                <h2>2. 부동산 유동화 및 세무 전략: 평촌 재건축 시나리오</h2>
-                <div class="vip-card">
-                    <span class="vip-badge">Asset Liquidity</span>
-                    <h3>환급금 최적화 및 주택연금 신탁 설계</h3>
-                    <p>평촌 아파트 재건축 환급금 4,000만 원을 ISA 계좌로 납입하여 세액공제 혜택을 극대화하고, 70세 이후 <b>'신탁방식 주택연금'</b> 가입을 통해 평생 월급을 확보하십시오.</p>
-                </div>
-            </div>
-            <div class="report-section" style="background:#fff7f7; padding:30px; border-radius:28px;">
-                <h2>3. 건보료 및 세무 리스크 완전 차단 (Legal Defense)</h2>
-                <div class="vip-card" style="background:white;">
-                    <h3>임의계속가입 및 피부양자 사수</h3>
-                    <p>퇴직 후 3년간 보험료를 방어함과 동시에, <b>자녀(의대생)</b>가 경제력을 갖추기 전까지 사적 연금 수령액을 연 2,000만 원 이하로 철저히 통제하십시오.</p>
-                </div>
-            </div>
-            <div class="report-section">
-                <h2>4. 시나리오 기반 스트레스 테스트 및 라이프 케어</h2>
-                <div class="vip-card">
-                    <span class="vip-badge">Risk Mgmt</span>
-                    <h3>Low Scenario 대응 및 증여 플랜</h3>
-                    <p>Low Scenario 발생 시 생활비를 즉각 삭감하는 가이드라인을 준수하고, 자녀의 개원 시점에 맞춘 <b>'10년 단위 증여 플랜'</b>을 가동하십시오.</p>
-                </div>
-            </div>
-            <div style="text-align:center; font-size:1.2rem; font-weight:800; color:var(--sk-red); margin-top:20px;">
-                2039년 예상 자산 잔액 (Mid 기준): ${Math.round(lastTotal).toLocaleString()}원
-            </div>
-        `;
-        document.getElementById("reportModal").style.display = "block";
-    }
-
-    function closeModal() { document.getElementById("reportModal").style.display = "none"; }
-    window.onclick = e => { if(e.target == document.getElementById("reportModal")) closeModal(); };
-    window.onload = () => runSimulationSequence();
 </script>
 </body>
 </html>
